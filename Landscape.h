@@ -14,9 +14,16 @@ public:
 	Landscape();
 	~Landscape();
 
+	//Returns the vector of vector of tiles of this landscape
 	vector<vector<Tile>> &getTiles();
 
-	Tile &getTilesByIndex(int x, int y);
+	//Returns a tile of the landscape by its index
+	Tile &getTilesByIndex(
+		int x, 
+		int y);
+
+	//Returns the maximum and minimum height value for this simulation
+	vector<double> getHeightMaxMin();
 
 	//Random generator 
 	double randomReal(
@@ -32,8 +39,12 @@ public:
 	static mt19937 mersenne_generator;
 
 private:
-	int m_height;
-	int m_width;
+	int m_SmiulationHeight;
+	int m_SimulationWidth;
 	vector<vector<Tile>> m_tiles = vector<vector<Tile>>(SIMULATION_Y, vector<Tile>(SIMULATION_X));
+
+	//Height map properties
+	double m_heightMax;
+	double m_heightMin;
 };
 

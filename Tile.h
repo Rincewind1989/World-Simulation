@@ -11,15 +11,18 @@ public:
 	~Tile();
 
 	//Setters/Getters
-	void setHeight(double height);
+	void setHeight(
+		double height);
+
 	double getHeight();
 
-	void setTemperature(double temperature);
-	void addTemperature(double deltaTemperature);
-	double getTemperature();
+	void setTemperature(
+		double temperature);
 
-	void setGroundTextureString(string groundTextureString);
-	string getGroundTextureString();
+	void addTemperature(
+		double Temperature);
+
+	double getTemperature();
 
 private:
 	double m_height = 0.0;

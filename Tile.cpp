@@ -27,16 +27,18 @@ double Tile::getHeight()
 
 
 //Sets the temperature of the tile
-void Tile::setTemperature(double temperature)
+void Tile::setTemperature(
+	double temperature)
 {
 	m_temperature = temperature;
 }
 
 
 //Adds the float value to the temperature of the tile
-void Tile::addTemperature(double deltaTemperature)
+void Tile::addTemperature(
+	double Temperature)
 {
-	m_temperature += deltaTemperature;
+	m_temperature += Temperature;
 }
 
 
@@ -44,18 +46,4 @@ void Tile::addTemperature(double deltaTemperature)
 double Tile::getTemperature()
 {
 	return m_temperature;
-}
-
-
-//Sets the string of the ground texture for this tile
-void Tile::setGroundTextureString(string groundTextureString)
-{
-	m_groundTextureString = groundTextureString;
-}
-
-
-//Returns the ground texture string of this tile
-string Tile::getGroundTextureString()
-{
-	return m_groundTextureString;
 }
