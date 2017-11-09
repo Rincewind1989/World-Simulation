@@ -25,7 +25,8 @@ public:
 
 	//Grabs the events on both windows
 	void getEvents(
-		vector<vector<Tile>> &tiles);
+		vector<vector<Tile>> &tiles,
+		vector<Organism> &organisms);
 
 	//Returns the x position of the mouse
 	int GraphicHandler::getMousePositionX();
@@ -49,6 +50,7 @@ private:
 
 	//The Windows for the neural network and the game
 	sf::RenderWindow m_gameWindow;
+	sf::RenderWindow m_informationWindow;
 
 	//The textures need for drawing
 	sf::Texture m_grassTexture;

@@ -35,18 +35,46 @@ Landscape::Landscape()
 	primeIndex = distribution_int(mersenne_generator);
 
 	//Using the Perlin Noise to get a temperature map
+	double optimumHeight = fabs(m_heightMax * WATER_LEVEL + m_heightMax * GRASS_LEVEL) / 2.0;
+	double a = -7.0;
+	double b = -2.0 * a * optimumHeight;
+	double heightFactor = 0.0;
+	double baseFactor = 25.0 / optimumHeight;
 	for (int y = 0; y < m_SmiulationHeight; y++)
 	{
 		for (int x = 0; x < m_SimulationWidth; x++)
 		{
 			double noise = ValueNoise_2D(x, y);
-			if (m_tiles[y][x].getHeight() > 0)
+			heightFactor = a * m_tiles[y][x].getHeight() * m_tiles[y][x].getHeight() + b * m_tiles[y][x].getHeight();
+			if (m_tiles[y][x].getHeight() > m_heightMax * WATER_LEVEL)
 			{
-				m_tiles[y][x].setTemperature(m_tiles[y][x].getHeight() * (-1) * 100 + noise * 5.0 + 25.0);
+				m_tiles[y][x].setTemperature(heightFactor * baseFactor + noise * 5.0);
 			}
 			else
 			{
-				m_tiles[y][x].setTemperature(noise * 7.5 + 3.0);
+				m_tiles[y][x].setTemperature(noise * 3.0 + 3.0);
+			}
+			
+		}
+	}
+
+	//Depending on the height and the temperature food is generated on every tile
+	//Height for maximum food is
+	a = -10.0;
+	b = -2.0 * a * optimumHeight;
+	double food = 0.0;
+	for (int y = 0; y < m_SmiulationHeight; y++)
+	{
+		for (int x = 0; x < m_SimulationWidth; x++)
+		{
+			food = a * m_tiles[y][x].getHeight() * m_tiles[y][x].getHeight() + b * m_tiles[y][x].getHeight() + m_tiles[y][x].getTemperature() * 1.0;
+			if (food < 0)
+			{
+				m_tiles[y][x].setFood(0);
+			}
+			else
+			{
+				m_tiles[y][x].setFood(food);
 			}
 			
 		}

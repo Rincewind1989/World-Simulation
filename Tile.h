@@ -24,9 +24,17 @@ public:
 
 	double getTemperature();
 
+	void setFood(
+		double food);
+
+	void addFood(
+		double food);
+
+	double getFood();
+
 private:
 	double m_height = 0.0;
 	double m_temperature = 25.0;
-	string m_groundTextureString;
+	double m_food = 0.0;
 };
 

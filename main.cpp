@@ -16,9 +16,14 @@ int main()
 	cout << "Running simulation...\n";
 	while (true)
 	{
+		//Update Simulation
+		simulation.updateOrganisms();
+
+		//Update Graphics
 		graphicHandler.printWorld(simulation.getLandscape().getTiles());
 		graphicHandler.printEntities(simulation.getOrganisms());
-		graphicHandler.getEvents(simulation.getLandscape().getTiles());
+		graphicHandler.getEvents(simulation.getLandscape().getTiles(), simulation.getOrganisms());
+
 	}
 
 }

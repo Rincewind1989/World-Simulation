@@ -6,7 +6,6 @@ Organism::Organism()
 {
 	m_positionX = randomReal(0, (double)SIMULATION_X);
 	m_positionY = randomReal(0, (double)SIMULATION_Y);
-	cout << m_positionX << "\t" << m_positionY << endl;
 }
 
 
@@ -73,6 +72,103 @@ void Organism::addEnergy(
 double Organism::getEnergy()
 {
 	return m_energy;
+}
+
+
+void Organism::setTemperature(
+	double temperature)
+{
+	m_temperature = temperature;
+}
+
+
+void Organism::addTemperature(
+	double temperature)
+{
+	m_temperature += temperature;
+}
+
+
+double Organism::getTemperature()
+{
+	return m_temperature;
+}
+
+
+void Organism::setHeatEnergyProduction(
+	double heatEnergyProduction)
+{
+	m_energyHeatProduction = heatEnergyProduction;
+}
+
+
+double Organism::getHeatEnergyProduction()
+{
+	return m_energyHeatProduction;
+}
+
+
+void Organism::setSize(
+	double size)
+{
+	m_size = size;
+}
+
+
+double Organism::getSize()
+{
+	return m_size;
+}
+
+
+void Organism::setRed(
+	int red)
+{
+	m_red = red;
+}
+
+
+double Organism::getRed()
+{
+	return m_red;
+}
+
+
+void Organism::setGreen(
+	int green)
+{
+	m_green = green;
+}
+
+
+double Organism::getGreen()
+{
+	return m_green;
+}
+
+
+void Organism::setBlue(
+	int blue)
+{
+	m_blue = blue;
+}
+
+
+double Organism::getBlue()
+{
+	return m_blue;
+}
+
+
+void Organism::setAlpha(
+	int alpha)
+{
+	m_alpha = alpha;
+}
+
+double Organism::getAlpha()
+{
+	return m_alpha;
 }
 
 

@@ -47,3 +47,26 @@ double Tile::getTemperature()
 {
 	return m_temperature;
 }
+
+
+//Sets the food value for this tile
+void Tile::setFood(
+	double food)
+{
+	m_food = food;
+}
+
+
+//Adds a food value to this tile
+void Tile::addFood(
+	double food)
+{
+	m_food += food;
+}
+
+
+//Returns the food value of this tile
+double Tile::getFood()
+{
+	return m_food;
+}

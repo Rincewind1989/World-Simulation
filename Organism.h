@@ -37,6 +37,45 @@ public:
 
 	double getEnergy();
 
+	void setTemperature(
+		double temperature);
+
+	void addTemperature(
+		double temperature);
+
+	double getTemperature();
+
+	void setHeatEnergyProduction(
+		double heatEnergyProduction);
+
+	double getHeatEnergyProduction();
+
+	void setSize(
+		double size);
+
+	double getSize();
+
+	void setRed(
+		int red);
+
+	double getRed();
+
+	void setGreen(
+		int green);
+
+	double getGreen();
+
+	void setBlue(
+		int blue);
+
+	double getBlue();
+
+	void setAlpha(
+		int transparency);
+
+	double getAlpha();
+
+
 	//Random generator 
 	double randomReal(
 		const double lowerBoundary,
@@ -56,9 +95,19 @@ private:
 	//X-Y Position
 	double m_positionX;
 	double m_positionY;
+	double m_size = 1.0;
+
+	int m_red = randomInt(0,255);
+	int m_green = randomInt(0, 255);
+	int m_blue = randomInt(0, 255);
+	int m_alpha = randomInt(128, 255);
+
+	//Body funtionalities
+	double m_energyHeatProduction = ENERGY_HEAT_PRODUCTION;
+	double m_heatLoss = HEAT_LOSS_FACTOR;
 
 	//Condition
-	double m_energy = 100.0;
-	double temperature = 25.0;
+	double m_energy = STARTING_ENERGY;
+	double m_temperature = STARTING_TEMPERATURE;
 };
 
