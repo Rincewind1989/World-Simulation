@@ -1,85 +1,110 @@
 #include "Landscape.h"
-#include "Perlin Noise.h"
+#include "PerlinNoise.h"
 
 
 
 Landscape::Landscape()
 {
-	m_SmiulationHeight = SIMULATION_Y;
-	m_SimulationWidth = SIMULATION_X;
+	//Creating the random generator for seeding the perlin noise
+	random_device seed_generator;
+	unsigned seed = seed_generator();
+	mt19937 mersenne_generator(seed);
+	uniform_int_distribution<int> distribution_int(0, 10000000);
+	seed = distribution_int(mersenne_generator);
+
+	//Creating the perlin noise
+	PerlinNoise perlin(seed);
+	const double fx = SIMULATION_X / FREQUENCY;
+	const double fy = SIMULATION_Y / FREQUENCY;
+	
+	//Save max and min height for later calculations
 	float max = 0, min = 0;
 
 	//Using the Perlin Noise to get a height map
-	for (int y = 0; y < m_SmiulationHeight; y++)
+	for (int y = 0; y < SIMULATION_Y; y++)
 	{
-		for (int x = 0; x < m_SimulationWidth; x++)
+		for (int x = 0; x < SIMULATION_X; x++)
 		{
-			double noise = ValueNoise_2D(x, y);
-			m_tiles[y][x].setHeight(noise);
-			if (noise > max) { max = noise; }
-			if (noise < min) { min = noise; }
+			double height = (perlin.octaveNoise0_1(x / fx, y / fy, OCTAVES) - 0.5) * HEIGHT_MULITPLICATOR;
+			_tiles[y][x].setHeight(height);
+			if (height > max) { max = height; }
+			if (height < min) { min = height; }
 		}
 	}
 
 	//Parameter settings
-	m_heightMax = max;
-	m_heightMin = min;
+	_heightMax = max;
+	_heightMin = min;
+	
+	//Reseed the perlin noise for the temperature map
+	perlin.reseed(distribution_int(mersenne_generator));
 
-	//Reseeding the Perlin noise
-	random_device seed_generator;
-	unsigned seed = seed_generator();
-	mt19937 mersenne_generator(seed);
-	uniform_real_distribution<double> distribution_real(0.4, 0.8);
-	persistence = distribution_real(mersenne_generator);
-	uniform_int_distribution<int> distribution_int(0, maxPrimeIndex - 1);
-	primeIndex = distribution_int(mersenne_generator);
-
-	//Using the Perlin Noise to get a temperature map
-	double optimumHeight = fabs(m_heightMax * WATER_LEVEL + m_heightMax * GRASS_LEVEL) / 2.0;
-	double a = -7.0;
-	double b = -2.0 * a * optimumHeight;
-	double heightFactor = 0.0;
-	double baseFactor = 25.0 / optimumHeight;
-	for (int y = 0; y < m_SmiulationHeight; y++)
+	//Getting the temperature based on the height map
+	double optimumHeight = fabs(_heightMax * WATER_LEVEL + _heightMax * GRASS_LEVEL) / 2.0;
+	double slope = (LOW_TEMPERATURE - OPT_TEMPERATURE) / (_heightMax - optimumHeight);
+	for (int y = 0; y < SIMULATION_Y; y++)
 	{
-		for (int x = 0; x < m_SimulationWidth; x++)
+		for (int x = 0; x < SIMULATION_X; x++)
 		{
-			double noise = ValueNoise_2D(x, y);
-			heightFactor = a * m_tiles[y][x].getHeight() * m_tiles[y][x].getHeight() + b * m_tiles[y][x].getHeight();
-			if (m_tiles[y][x].getHeight() > m_heightMax * WATER_LEVEL)
+			//Using the Perlin Noise to get a temperature map that is added on the height map temperature
+			double noise = perlin.octaveNoise0_1(x / fx, y / fy, OCTAVES) - 0.5;
+			if (_tiles[y][x].getHeight() > _heightMax * WATER_LEVEL)
 			{
-				m_tiles[y][x].setTemperature(heightFactor * baseFactor + noise * 5.0);
+				_tiles[y][x].setTemperature(slope * fabs(_tiles[y][x].getHeight() - optimumHeight) + OPT_TEMPERATURE + noise * (OPT_TEMPERATURE - LOW_TEMPERATURE) / TEMPERATURE_FLUCTUATION_FACTOR);
 			}
 			else
 			{
-				m_tiles[y][x].setTemperature(noise * 3.0 + 3.0);
+				_tiles[y][x].setTemperature(noise * 3.0 + 3.0);
 			}
 			
 		}
 	}
+
+	//Reseed the perlin noise for the food map
+	perlin.reseed(distribution_int(mersenne_generator));
 
 	//Depending on the height and the temperature food is generated on every tile
-	//Height for maximum food is
-	a = -10.0;
-	b = -2.0 * a * optimumHeight;
-	double food = 0.0;
-	for (int y = 0; y < m_SmiulationHeight; y++)
+	double food;
+	for (int y = 0; y < SIMULATION_Y; y++)
 	{
-		for (int x = 0; x < m_SimulationWidth; x++)
+		for (int x = 0; x < SIMULATION_X; x++)
 		{
-			food = a * m_tiles[y][x].getHeight() * m_tiles[y][x].getHeight() + b * m_tiles[y][x].getHeight() + m_tiles[y][x].getTemperature() * 1.0;
-			if (food < 0)
+			if (randomReal(0.0, 1.0) < CHANCE_FOOD_GROWTH)
 			{
-				m_tiles[y][x].setFood(0);
-			}
-			else
-			{
-				m_tiles[y][x].setFood(food);
-			}
-			
+				double noise = perlin.octaveNoise0_1(x / fx, y / fy, OCTAVES) - 0.5;
+				if (_tiles[y][x].getTemperature() * FOOD_TEMPERATURE_FACTOR + _tiles[y][x].getHeight() * FOOD_HEIGHT_FACTOR + noise * FOOD_NOISE_FACTOR > 0.0)
+				{
+					food = randomReal(0.0, _tiles[y][x].getTemperature() * FOOD_TEMPERATURE_FACTOR + _tiles[y][x].getHeight() * FOOD_HEIGHT_FACTOR + noise * FOOD_NOISE_FACTOR);
+				}
+				else
+				{
+					food = randomReal(_tiles[y][x].getTemperature() * FOOD_TEMPERATURE_FACTOR + _tiles[y][x].getHeight() * FOOD_HEIGHT_FACTOR + noise * FOOD_NOISE_FACTOR, 0.0);
+				}
+				if (_tiles[y][x].getHeight() > _heightMax * WATER_LEVEL)
+				{
+					if (food < 0)
+					{
+						_tiles[y][x].setFood(0.0);
+					}
+					else
+					{
+						_tiles[y][x].setFood(food);
+					}
+				}
+				else
+				{
+					if (food < 0)
+					{
+						_tiles[y][x].setFood(food * (-1.0 / 2.0));
+					}
+					else
+					{
+						_tiles[y][x].setFood(food / 2.0);
+					}
+				}
+			}			
 		}
 	}
-
 }
 
 
@@ -91,7 +116,7 @@ Landscape::~Landscape()
 //Returns the vector of vector of tiles of this landscape
 vector<vector<Tile>> &Landscape::getTiles()
 {
-	return m_tiles;
+	return _tiles;
 }
 
 
@@ -100,7 +125,7 @@ Tile &Landscape::getTilesByIndex(
 	int x, 
 	int y)
 {
-	return m_tiles[y][x];
+	return _tiles[y][x];
 }
 
 
@@ -108,8 +133,8 @@ Tile &Landscape::getTilesByIndex(
 vector<double> Landscape::getHeightMaxMin()
 {
 	vector<double> tmp;
-	tmp.push_back(m_heightMax);
-	tmp.push_back(m_heightMin);
+	tmp.push_back(_heightMax);
+	tmp.push_back(_heightMin);
 	return tmp;
 }
 

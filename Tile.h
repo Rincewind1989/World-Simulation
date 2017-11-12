@@ -14,7 +14,7 @@ public:
 	void setHeight(
 		double height);
 
-	double getHeight();
+	double &getHeight();
 
 	void setTemperature(
 		double temperature);
@@ -22,7 +22,7 @@ public:
 	void addTemperature(
 		double Temperature);
 
-	double getTemperature();
+	double &getTemperature();
 
 	void setFood(
 		double food);
@@ -30,11 +30,11 @@ public:
 	void addFood(
 		double food);
 
-	double getFood();
+	double &getFood();
 
 private:
-	double m_height = 0.0;
-	double m_temperature = 25.0;
-	double m_food = 0.0;
+	double _height = 0.0;
+	double _temperature = 25.0;
+	double _food = 0.0;
 };
 

@@ -5,45 +5,46 @@
 #include <iterator>
 
 GraphicHandler::GraphicHandler(
-	vector<double> heightMaxMin)
+	Simulation &simulation)
 {
+	//Set the simulation pointer for the graphic handler
+	_simulation = &simulation;
+
 	//Parameter settings
-	m_heightMax = heightMaxMin[0];
-	m_heightMin = heightMaxMin[1];
+	_heightMax = _simulation->getLandscape().getHeightMaxMin()[0];
+	_heightMin = _simulation->getLandscape().getHeightMaxMin()[1];
 
 	//Sets the window size and title
-	m_gameWindow.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Simulation");
-	m_informationWindow.create(sf::VideoMode(WINDOW_INFORMATION_WIDTH, WINDOW_INFORMATION_HEIGHT), "Information");
-
-	//Clear the information screen
-	m_informationWindow.clear(m_color);
-	m_informationWindow.display();
+	_gameWindow.create(sf::VideoMode(WINDOW_WIDTH + WINDOW_INFORMATION_WIDTH, WINDOW_HEIGHT), "Simulation");
 
 	//Load all the textures
-	m_grassTexture.loadFromFile("Textures/grass.jpg");
-	m_waterTexture.loadFromFile("Textures/water.jpg");
-	m_snowTexture.loadFromFile("Textures/snow.jpg");
-	m_stoneTexture.loadFromFile("Textures/stone.jpg");
+	_grassTexture.loadFromFile("Textures/grass.jpg");
+	_waterTexture.loadFromFile("Textures/water.jpg");
+	_snowTexture.loadFromFile("Textures/snow.jpg");
+	_stoneTexture.loadFromFile("Textures/stone.jpg");
 
 	//Draws the textures in sprites that are later usable
 	//Grass
-	m_grassSprite.setTexture(m_grassTexture);
-	m_grassSprite.setScale(sf::Vector2f(1.0 * 100 / m_zPosition / (m_grassTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / m_zPosition / (m_grassTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
+	_grassSprite.setTexture(_grassTexture);
+	_grassSprite.setScale(sf::Vector2f(1.0 * 100 / _zPosition / (_grassTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / _zPosition / (_grassTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
 
 
 	//Water
-	m_waterSprite.setTexture(m_waterTexture); 
-	m_waterSprite.setScale(sf::Vector2f(1.0 * 100 / m_zPosition / (m_waterTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / m_zPosition / (m_waterTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
+	_waterSprite.setTexture(_waterTexture); 
+	_waterSprite.setScale(sf::Vector2f(1.0 * 100 / _zPosition / (_waterTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / _zPosition / (_waterTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
 
 
 	//Snow
-	m_snowSprite.setTexture(m_snowTexture);
-	m_snowSprite.setScale(sf::Vector2f(1.0 * 100 / m_zPosition / (m_snowTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / m_zPosition / (m_snowTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
+	_snowSprite.setTexture(_snowTexture);
+	_snowSprite.setScale(sf::Vector2f(1.0 * 100 / _zPosition / (_snowTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / _zPosition / (_snowTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
 
 
 	//Stone
-	m_stoneSprite.setTexture(m_stoneTexture);
-	m_stoneSprite.setScale(sf::Vector2f(1.0 * 100 / m_zPosition / (m_stoneTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / m_zPosition / (m_stoneTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
+	_stoneSprite.setTexture(_stoneTexture);
+	_stoneSprite.setScale(sf::Vector2f(1.0 * 100 / _zPosition / (_stoneTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / _zPosition / (_stoneTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
+
+	//The sprite for the information window
+	_tileSprite.setScale(sf::Vector2f(INFORMATION_WINDOW_SPRITE_SIZE, INFORMATION_WINDOW_SPRITE_SIZE));
 
 	//Loads the font from a file
 	sf::Font font;
@@ -51,7 +52,8 @@ GraphicHandler::GraphicHandler(
 	{
 		perror("Font file couldnt be loaded.");
 	}
-	m_font = font;
+	_font = font;
+
 }
 
 
@@ -61,11 +63,10 @@ GraphicHandler::~GraphicHandler()
 
 
 //Prints the game entites to the window
-void GraphicHandler::printWorld(
-	vector<vector<Tile>> &tiles)
+void GraphicHandler::printWorld()
 {
-	//Clear the screen
-	m_gameWindow.clear(m_color);
+	//Gets a reference to the tiles
+	vector<vector<Tile>> *tiles = &_simulation->getLandscape().getTiles();
 
 	//Draws the tiles
 	//The x and yPosition are sprite positions in the window
@@ -77,60 +78,60 @@ void GraphicHandler::printWorld(
 	int x;
 
 	//This if clause calculates the loop interval for y (which tiles are visible with the momentarily camera settings)
-	if ((int)((m_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - m_zPosition / (2.0 * 100.0) * (float)SIMULATION_Y) < 0)
+	if ((int)((_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - _zPosition / (2.0 * 100.0) * (float)SIMULATION_Y) < 0)
 	{
 		y = 0;
-		yPosition = abs((int)((m_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - m_zPosition / (2.0 * 100.0) * (float)SIMULATION_Y));
+		yPosition = abs((int)((_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - _zPosition / (2.0 * 100.0) * (float)SIMULATION_Y));
 	}
 	else
 	{
-		y = (int)((m_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - m_zPosition / (2.0 * 100.0) * (float)SIMULATION_Y);
+		y = (int)((_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - _zPosition / (2.0 * 100.0) * (float)SIMULATION_Y);
 		yPosition = 0;
 	}
 
 	//Loop for the y-tile-axis
-	for (y; y < ((int)((m_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y + m_zPosition / (2.0 * 100.0) * (float)SIMULATION_Y)) && y < SIMULATION_Y; y++)
+	for (y; y < ((int)((_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y + _zPosition / (2.0 * 100.0) * (float)SIMULATION_Y)) && y < SIMULATION_Y; y++)
 	{
 
 		//This if clause calculates the loop interval for x (which tiles are visible with the momentarily camera settings)
-		if ((int)((m_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - m_zPosition / (2.0 * 100.0) * (float)SIMULATION_X) < 0)
+		if ((int)((_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - _zPosition / (2.0 * 100.0) * (float)SIMULATION_X) < 0)
 		{
 			x = 0;
-			xPosition = abs((int)((m_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - (m_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X));
+			xPosition = abs((int)((_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X));
 		}
 		else
 		{
 			xPosition = 0;
-			x = (int)((m_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - (m_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X);
+			x = (int)((_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X);
 		}
 
 		//Loop for the x-tile-axis
-		for (x; x < ((int)((m_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X + (m_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X)) && x < SIMULATION_X; x++)
+		for (x; x < ((int)((_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X + (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X)) && x < SIMULATION_X; x++)
 		{
-			if (tiles[y][x].getHeight() <= m_heightMax * WATER_LEVEL)
+			if ((*tiles)[y][x].getHeight() <= _heightMax * WATER_LEVEL)
 			{
-				m_waterSprite.setPosition(xPosition * m_WidnowWidth / m_Simulationx * 100 / m_zPosition, yPosition * m_WindowHeight / m_Simulationy * 100 / m_zPosition);
-				m_waterSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs(tiles[y][x].getHeight()))) * 255));
-				m_gameWindow.draw(m_waterSprite);
+				_waterSprite.setPosition(xPosition * _WidnowWidth / _Simulationx * 100 / _zPosition, yPosition * _WindowHeight / _Simulationy * 100 / _zPosition);
+				_waterSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs((*tiles)[y][x].getHeight()) / HEIGHT_MULITPLICATOR)) * 255));
+				_gameWindow.draw(_waterSprite);
 			}
-			if (tiles[y][x].getHeight() > m_heightMax * WATER_LEVEL && tiles[y][x].getHeight() < m_heightMax * GRASS_LEVEL)
+			if ((*tiles)[y][x].getHeight() > _heightMax * WATER_LEVEL && (*tiles)[y][x].getHeight() < _heightMax * GRASS_LEVEL)
 			{
-				m_grassSprite.setPosition(xPosition * m_WidnowWidth / m_Simulationx * 100 / m_zPosition, yPosition * m_WindowHeight / m_Simulationy * 100 / m_zPosition);
-				m_grassSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs(tiles[y][x].getHeight())) ) * 255));
-				m_gameWindow.draw(m_grassSprite);
+				_grassSprite.setPosition(xPosition * _WidnowWidth / _Simulationx * 100 / _zPosition, yPosition * _WindowHeight / _Simulationy * 100 / _zPosition);
+				_grassSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs((*tiles)[y][x].getHeight()) / HEIGHT_MULITPLICATOR) ) * 255));
+				_gameWindow.draw(_grassSprite);
 			}
 
-			if (tiles[y][x].getHeight() > m_heightMax * GRASS_LEVEL && tiles[y][x].getHeight() < m_heightMax * STONE_LEVEL)
+			if ((*tiles)[y][x].getHeight() > _heightMax * GRASS_LEVEL && (*tiles)[y][x].getHeight() < _heightMax * STONE_LEVEL)
 			{
-				m_stoneSprite.setPosition(xPosition * m_WidnowWidth / m_Simulationx * 100 / m_zPosition, yPosition * m_WindowHeight / m_Simulationy * 100 / m_zPosition);
-				m_stoneSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs(tiles[y][x].getHeight()))) * 255));
-				m_gameWindow.draw(m_stoneSprite);
+				_stoneSprite.setPosition(xPosition * _WidnowWidth / _Simulationx * 100 / _zPosition, yPosition * _WindowHeight / _Simulationy * 100 / _zPosition);
+				_stoneSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs((*tiles)[y][x].getHeight()) / HEIGHT_MULITPLICATOR)) * 255));
+				_gameWindow.draw(_stoneSprite);
 			}
-			if (tiles[y][x].getHeight() > m_heightMax * STONE_LEVEL)
+			if ((*tiles)[y][x].getHeight() > _heightMax * STONE_LEVEL)
 			{
-				m_snowSprite.setPosition(xPosition * m_WidnowWidth / m_Simulationx * 100 / m_zPosition, yPosition * m_WindowHeight / m_Simulationy * 100 / m_zPosition);
-				m_snowSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs(tiles[y][x].getHeight()))) * 255));
-				m_gameWindow.draw(m_snowSprite);
+				_snowSprite.setPosition(xPosition * _WidnowWidth / _Simulationx * 100 / _zPosition, yPosition * _WindowHeight / _Simulationy * 100 / _zPosition);
+				_snowSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs((*tiles)[y][x].getHeight()) / HEIGHT_MULITPLICATOR)) * 255));
+				_gameWindow.draw(_snowSprite);
 			}
 			xPosition++;
 		}
@@ -140,23 +141,25 @@ void GraphicHandler::printWorld(
 
 
 //Prints the entities of the game
-void GraphicHandler::printEntities(
-	vector<Organism> &organisms)
+void GraphicHandler::printEntities()
 {
+	//Get the reference to the organism
+	vector<Organism>* organisms = &_simulation->getOrganisms();
+
 	//The x and yPosition are entity positions in the window
 	int xPosition = 0;
 	int yPosition = 0;
 
 	//Shape for the organism
-	sf::CircleShape tmpShape(100.0 / m_zPosition * 1.0);
+	sf::CircleShape tmpShape(100.0 / _zPosition * 1.0);
 
 	//loops through all organism and checks if they are visible
-	for (vector<Organism>::iterator it = organisms.begin(); it != organisms.end(); ++it)
+	for (vector<Organism>::iterator it = (*organisms).begin(); it != (*organisms).end(); ++it)
 	{
-		if (it->getPositionX() < (m_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - (m_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X 
-			|| it->getPositionX() > (m_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X + (m_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X 
-			|| it->getPositionY() < (m_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - (m_zPosition / (2.0 * 100.0)) * (float)SIMULATION_Y
-			|| it->getPositionY() > (m_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y + (m_zPosition / (2.0 * 100.0)) * (float)SIMULATION_Y)
+		if (it->getPositionX() < (_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X 
+			|| it->getPositionX() > (_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X + (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X 
+			|| it->getPositionY() < (_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_Y
+			|| it->getPositionY() > (_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y + (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_Y)
 		{
 			continue;
 		}
@@ -164,53 +167,189 @@ void GraphicHandler::printEntities(
 		else
 		{
 			//resizes proportional to the size of the organism
-			tmpShape.setRadius(100.0 / m_zPosition * it->getSize());
+			tmpShape.setRadius(100.0 / _zPosition * it->getSize());
 			sf::Color color(it->getRed(), it->getGreen(), it->getBlue(), it->getAlpha());
 			tmpShape.setFillColor(color);
 			//calculates the xPosition for the entity on the screen
-			xPosition = (int)((m_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - m_zPosition / (2.0 * 100.0) * (float)SIMULATION_X);
+			xPosition = (int)((_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - _zPosition / (2.0 * 100.0) * (float)SIMULATION_X);
 			//calculates the yPosition for the entity on the screen
-			yPosition = (int)((m_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - m_zPosition / (2.0 * 100.0) * (float)SIMULATION_Y);				
-			tmpShape.setPosition((it->getPositionX() - xPosition) * m_WidnowWidth / m_Simulationx * 100 / m_zPosition, (it->getPositionY() - yPosition) * m_WindowHeight / m_Simulationy * 100 / m_zPosition);
+			yPosition = (int)((_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - _zPosition / (2.0 * 100.0) * (float)SIMULATION_Y);				
+			tmpShape.setPosition((it->getPositionX() - xPosition) * _WidnowWidth / _Simulationx * 100 / _zPosition, (it->getPositionY() - yPosition) * _WindowHeight / _Simulationy * 100 / _zPosition);
 
-			m_gameWindow.draw(tmpShape);
+			_gameWindow.draw(tmpShape);
 		}
 	}
+}
 
-	m_gameWindow.display();
+
+//Print information window
+void GraphicHandler::printInformation()
+{
+	//Define importan variables
+	sf::Vector2f pos;
+	string string;
+
+	// left mouse button is pressed: get information from the tile the mouse is hovering above
+	sf::Text text;
+	text.setFont(_font);
+	text.setCharacterSize(16);
+	text.setFillColor(sf::Color::Black);
+	text.setOutlineColor(sf::Color::Black);
+
+	//Draw the selected tile in the information window	
+	_gameWindow.draw(_tileSprite);
+
+	//Add the different information lines for the tile
+	string = "Position X: " + to_string(_tilePositionX) + "\tPosition Y: " + to_string(_tilePositionY);
+	text.setString(string);
+	pos = sf::Vector2f(WINDOW_WIDTH, INFORMATION_WINDOW_SPRITE_SIZE * _tileSprite.getTextureRect().height);
+	text.setPosition(pos);
+	_gameWindow.draw(text);
+
+	string = "Height: " + to_string(_tileP->getHeight());
+	text.setString(string);
+	pos = sf::Vector2f(WINDOW_WIDTH, text.getCharacterSize() + INFORMATION_WINDOW_SPRITE_SIZE * _grassSprite.getTextureRect().height);
+	text.setPosition(pos);
+	_gameWindow.draw(text);
+
+	string = "Temperature: " + to_string(_tileP->getTemperature());
+	text.setString(string);
+	pos = sf::Vector2f(WINDOW_WIDTH, 2.0 * text.getCharacterSize() + INFORMATION_WINDOW_SPRITE_SIZE * _grassSprite.getTextureRect().height);
+	text.setPosition(pos);
+	_gameWindow.draw(text);
+
+	string = "Food: " + to_string(_tileP->getFood());
+	text.setString(string);
+	pos = sf::Vector2f(WINDOW_WIDTH, 3.0 * text.getCharacterSize() + INFORMATION_WINDOW_SPRITE_SIZE * _grassSprite.getTextureRect().height);
+	text.setPosition(pos);
+	_gameWindow.draw(text);
+
+	//Shape for the organism
+	sf::CircleShape tmpShape(100.0 / _zPosition * 1.0);
+
+	if (_nearestOrganism != NULL)
+	{
+		//resizes proportional to the size of the organism
+		tmpShape.setRadius(10.0 * _nearestOrganism->getSize());
+		tmpShape.setPosition(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0);
+		sf::Color color(_nearestOrganism->getRed(), _nearestOrganism->getGreen(), _nearestOrganism->getBlue(), _nearestOrganism->getAlpha());
+		tmpShape.setFillColor(color);
+		_gameWindow.draw(tmpShape);
+
+		//Add the different information lines for the entity
+		string = "Highest Fitness so far: " + to_string(_simulation->getHighestFitness());
+		text.setString(string);
+		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 2.0 * 10.0 * _nearestOrganism->getSize());
+		text.setPosition(pos);
+		_gameWindow.draw(text);
+
+		string = "Organism on PositionX: " + to_string(_nearestOrganism->getPositionX()) + "\tY: " + to_string(_nearestOrganism->getPositionY());
+		text.setString(string);
+		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + text.getCharacterSize() + 2.0 * 10.0 * _nearestOrganism->getSize());
+		text.setPosition(pos);
+		_gameWindow.draw(text);
+
+		string = "Energy: " + to_string(_nearestOrganism->getEnergy());
+		text.setString(string);
+		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 2.0 *text.getCharacterSize() + 2.0 * 10.0 * _nearestOrganism->getSize());
+		text.setPosition(pos);
+		_gameWindow.draw(text);
+
+		string = "Temperature: " + to_string(_nearestOrganism->getTemperature());
+		text.setString(string);
+		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 3.0 * text.getCharacterSize() + 2.0 * 10.0 * _nearestOrganism->getSize());
+		text.setPosition(pos);
+		_gameWindow.draw(text);
+
+		string = "Fitness: " + to_string(_nearestOrganism->getFitness());
+		text.setString(string);
+		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 4.0 * text.getCharacterSize() + 2.0 * 10.0 * _nearestOrganism->getSize());
+		text.setPosition(pos);
+		_gameWindow.draw(text);
+
+		//Draw the neural network
+		//Draw the input nodes
+		for (int i = 0; i < INPUT_NEURONS; i++)
+		{
+			tmpShape.setRadius(RADIUS_NEURON);
+			tmpShape.setPosition(WINDOW_WIDTH + WINDOW_INFORMATION_WIDTH / 20.0, WINDOW_INFORMATION_HEIGHT + i*2.5*RADIUS_NEURON);
+			sf::Color color(0,0,0,255);
+			tmpShape.setFillColor(color);
+			_gameWindow.draw(tmpShape);
+		}
+
+		//Draw the hidden nodes
+		for (int hiddenLayers = 0; hiddenLayers < NUM_LAYERS - 2; hiddenLayers++)
+		{
+			for (int i = 0; i < HIDDEN_NEURONS; i++)
+			{
+				tmpShape.setRadius(RADIUS_NEURON);
+				tmpShape.setPosition(WINDOW_WIDTH + WINDOW_INFORMATION_WIDTH / 20.0 + (hiddenLayers + 1) * 5.0 * RADIUS_NEURON, WINDOW_INFORMATION_HEIGHT + i*2.5*RADIUS_NEURON);
+				sf::Color color(0, 0, 0, 255);
+				tmpShape.setFillColor(color);
+				_gameWindow.draw(tmpShape);
+			}
+		}		
+
+		//Draw the output nodes
+		for (int i = 0; i < OUTPUT_NEURONS; i++)
+		{
+			tmpShape.setRadius(RADIUS_NEURON);
+			tmpShape.setPosition(WINDOW_WIDTH + WINDOW_INFORMATION_WIDTH / 20.0 + 10.0 * RADIUS_NEURON, WINDOW_INFORMATION_HEIGHT + i*2.5*RADIUS_NEURON);
+			sf::Color color(0, 0, 0, 255);
+			tmpShape.setFillColor(color);
+			_gameWindow.draw(tmpShape);
+		}
+	}
+}
+
+
+//Clear the display
+void GraphicHandler::clear()
+{
+	_gameWindow.clear(_color);
+}
+
+
+//Draws the display
+void GraphicHandler::display()
+{
+	_gameWindow.display();
 }
 
 
 //Grabs the events on both windows
-void GraphicHandler::getEvents(
-	vector<vector<Tile>> &tiles,
-	vector<Organism> &organisms)
+void GraphicHandler::getEvents()
 {
+	//Get reference to the tiles and organisms
+	vector<vector<Tile>>* tiles = &_simulation->getLandscape().getTiles();
+	vector<Organism>* organisms = &_simulation->getOrganisms();
+
 	sf::Event event;
-	while (m_gameWindow.pollEvent(event))
+	while (_gameWindow.pollEvent(event))
 	{
 		if (event.type == sf::Event::Closed) {
-			m_gameWindow.close();
+			_gameWindow.close();
 		}
 
 		//Mouse wheel event regulates the distance to the map
 		if (event.type == sf::Event::MouseWheelMoved)
 		{
-			m_zPosition -= event.mouseWheel.delta;
-			if (m_zPosition > CAMERA_Z_DISTANCE)
+			_zPosition -= event.mouseWheel.delta;
+			if (_zPosition > CAMERA_Z_DISTANCE)
 			{
-				m_zPosition = CAMERA_Z_DISTANCE;
+				_zPosition = CAMERA_Z_DISTANCE;
 			}
-			if (m_zPosition < 10)
+			if (_zPosition < 10)
 			{
-				m_zPosition = 10;
+				_zPosition = 10;
 			}
 
 			//Rescales the sprites to the new distance view
-			m_grassSprite.setScale(sf::Vector2f(1.0 * 100 / m_zPosition / (m_grassTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / m_zPosition / (m_grassTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
-			m_waterSprite.setScale(sf::Vector2f(1.0 * 100 / m_zPosition / (m_waterTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / m_zPosition / (m_waterTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
-			m_stoneSprite.setScale(sf::Vector2f(1.0 * 100 / m_zPosition / (m_stoneTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / m_zPosition / (m_stoneTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
-			m_snowSprite.setScale(sf::Vector2f(1.0 * 100 / m_zPosition / (m_snowTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / m_zPosition / (m_snowTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
+			_grassSprite.setScale(sf::Vector2f(1.0 * 100 / _zPosition / (_grassTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / _zPosition / (_grassTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
+			_waterSprite.setScale(sf::Vector2f(1.0 * 100 / _zPosition / (_waterTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / _zPosition / (_waterTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
+			_stoneSprite.setScale(sf::Vector2f(1.0 * 100 / _zPosition / (_stoneTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / _zPosition / (_stoneTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
+			_snowSprite.setScale(sf::Vector2f(1.0 * 100 / _zPosition / (_snowTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / _zPosition / (_snowTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
 
 		}
 
@@ -219,119 +358,81 @@ void GraphicHandler::getEvents(
 		{
 			if (event.key.code == sf::Keyboard::Right)
 			{
-				m_xPosition -= WINDOW_WIDTH / 15.0;
-				if (m_xPosition < 0)
+				_xPosition -= WINDOW_WIDTH / 15.0;
+				if (_xPosition < 0)
 				{
-					m_xPosition = 0;
+					_xPosition = 0;
 				}
 			}
 			if (event.key.code == sf::Keyboard::Left)
 			{
-				m_xPosition += WINDOW_WIDTH / 15.0;
-				if (m_xPosition > WINDOW_WIDTH)
+				_xPosition += WINDOW_WIDTH / 15.0;
+				if (_xPosition > WINDOW_WIDTH)
 				{
-					m_xPosition = WINDOW_WIDTH;
+					_xPosition = WINDOW_WIDTH;
 				}
 			}
 			if (event.key.code == sf::Keyboard::Up)
 			{
-				m_yPosition += WINDOW_HEIGHT / 15.0;
-				if (m_yPosition > WINDOW_HEIGHT)
+				_yPosition += WINDOW_HEIGHT / 15.0;
+				if (_yPosition > WINDOW_HEIGHT)
 				{
-					m_yPosition = WINDOW_HEIGHT;
+					_yPosition = WINDOW_HEIGHT;
 				}
 			}
 			if (event.key.code == sf::Keyboard::Down)
 			{
-				m_yPosition -= WINDOW_HEIGHT / 15.0;
+				_yPosition -= WINDOW_HEIGHT / 15.0;
 
-				if (m_yPosition < 0)
+				if (_yPosition < 0)
 				{
-					m_yPosition = 0;
+					_yPosition = 0;
 				}
 			}
 		}
 
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
-			//Define importan variables
-			sf::Vector2f pos;
-			string string;
+			//Gets the mouse positon and updates it
+			_mousePositionX = sf::Mouse::getPosition(_gameWindow).x;
+			_mousePositionY = sf::Mouse::getPosition(_gameWindow).y;
 
-			//Clear the information screen
-			m_informationWindow.clear(m_color);
-
-			// left mouse button is pressed: get information from the tile the mouse is hovering above
-			sf::Text text;
-			text.setFont(m_font);
-			text.setCharacterSize(16);
-			text.setFillColor(sf::Color::Black);
-			text.setOutlineColor(sf::Color::Black);
-
-			//Rescales the sprites to the new distance view
-			m_grassSprite.setScale(sf::Vector2f(INFORMATION_WINDOW_SPRITE_SIZE, INFORMATION_WINDOW_SPRITE_SIZE));
-			m_waterSprite.setScale(sf::Vector2f(INFORMATION_WINDOW_SPRITE_SIZE, INFORMATION_WINDOW_SPRITE_SIZE));
-			m_stoneSprite.setScale(sf::Vector2f(INFORMATION_WINDOW_SPRITE_SIZE, INFORMATION_WINDOW_SPRITE_SIZE));
-			m_snowSprite.setScale(sf::Vector2f(INFORMATION_WINDOW_SPRITE_SIZE, INFORMATION_WINDOW_SPRITE_SIZE));
-
-
-			//Draw the selected tile in the information window
-			if (tiles[getMousePositionY()][getMousePositionX()].getHeight() <= m_heightMax * WATER_LEVEL)
+			if (getMousePositionX() < SIMULATION_X && getMousePositionX() > 0 && getMousePositionY() > 0 && getMousePositionY() < SIMULATION_Y)
+			//Save the objects that were selected
+			if ((*tiles)[getMousePositionY()][getMousePositionX()].getHeight() <= _heightMax * WATER_LEVEL)
 			{
-				m_waterSprite.setPosition(0, 0);
-				m_waterSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs(tiles[getMousePositionY()][getMousePositionX()].getHeight()))) * 255));
-				m_informationWindow.draw(m_waterSprite);
+				_tileSprite.setTexture(_waterTexture);
+				_tileSprite.setPosition(WINDOW_WIDTH, 0);
+				_tileSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs((*tiles)[getMousePositionY()][getMousePositionX()].getHeight()))) * 255));
 			}
-			if (tiles[getMousePositionY()][getMousePositionX()].getHeight() > m_heightMax * WATER_LEVEL && tiles[getMousePositionY()][getMousePositionX()].getHeight() < m_heightMax * GRASS_LEVEL)
+			if ((*tiles)[getMousePositionY()][getMousePositionX()].getHeight() > _heightMax * WATER_LEVEL && (*tiles)[getMousePositionY()][getMousePositionX()].getHeight() < _heightMax * GRASS_LEVEL)
 			{
-				m_grassSprite.setPosition(0, 0);
-				m_grassSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs(tiles[getMousePositionY()][getMousePositionX()].getHeight()))) * 255));
-				m_informationWindow.draw(m_grassSprite);
+				_tileSprite.setTexture(_grassTexture);
+				_tileSprite.setPosition(WINDOW_WIDTH, 0);
+				_tileSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs((*tiles)[getMousePositionY()][getMousePositionX()].getHeight()))) * 255));
 			}
 
-			if (tiles[getMousePositionY()][getMousePositionX()].getHeight() > m_heightMax * GRASS_LEVEL && tiles[getMousePositionY()][getMousePositionX()].getHeight() < m_heightMax * STONE_LEVEL)
+			if ((*tiles)[getMousePositionY()][getMousePositionX()].getHeight() > _heightMax * GRASS_LEVEL && (*tiles)[getMousePositionY()][getMousePositionX()].getHeight() < _heightMax * STONE_LEVEL)
 			{
-				m_stoneSprite.setPosition(0, 0);
-				m_stoneSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs(tiles[getMousePositionY()][getMousePositionX()].getHeight()))) * 255));
-				m_informationWindow.draw(m_stoneSprite);
+				_tileSprite.setTexture(_stoneTexture);
+				_tileSprite.setPosition(WINDOW_WIDTH, 0);
+				_tileSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs((*tiles)[getMousePositionY()][getMousePositionX()].getHeight()))) * 255));
 			}
-			if (tiles[getMousePositionY()][getMousePositionX()].getHeight() > m_heightMax * STONE_LEVEL)
+			if ((*tiles)[getMousePositionY()][getMousePositionX()].getHeight() > _heightMax * STONE_LEVEL)
 			{
-				m_snowSprite.setPosition(0, 0);
-				m_snowSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs(tiles[getMousePositionY()][getMousePositionX()].getHeight()))) * 255));
-				m_informationWindow.draw(m_snowSprite);
+				_tileSprite.setTexture(_snowTexture);
+				_tileSprite.setPosition(WINDOW_WIDTH, 0);
+				_tileSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs((*tiles)[getMousePositionY()][getMousePositionX()].getHeight()))) * 255));
 			}
 
-			//Add the different information lines for the tile
-			string = "Position X: " + to_string(getMousePositionX()) + "\tPosition Y: " + to_string(getMousePositionY());
-			text.setString(string);
-			pos = sf::Vector2f(0.0, INFORMATION_WINDOW_SPRITE_SIZE * m_grassSprite.getTextureRect().height);
-			text.setPosition(pos);
-			m_informationWindow.draw(text);
+			_tileP = &(*tiles)[getMousePositionY()][getMousePositionX()];
+			_tilePositionX = getMousePositionX();
+			_tilePositionY = getMousePositionY();
 
-			string = "Height: " + to_string(tiles[getMousePositionY()][getMousePositionX()].getHeight());
-			text.setString(string);
-			pos = sf::Vector2f(0.0, text.getCharacterSize() + INFORMATION_WINDOW_SPRITE_SIZE * m_grassSprite.getTextureRect().height);
-			text.setPosition(pos);
-			m_informationWindow.draw(text);
-
-			string = "Temperature: " + to_string(tiles[getMousePositionY()][getMousePositionX()].getTemperature());
-			text.setString(string);
-			pos = sf::Vector2f(0.0, 2.0 * text.getCharacterSize() + INFORMATION_WINDOW_SPRITE_SIZE * m_grassSprite.getTextureRect().height);
-			text.setPosition(pos);
-			m_informationWindow.draw(text);
-
-			string =  "Food: " + to_string(tiles[getMousePositionY()][getMousePositionX()].getFood());
-			text.setString(string);
-			pos = sf::Vector2f(0.0, 3.0 * text.getCharacterSize() + INFORMATION_WINDOW_SPRITE_SIZE * m_grassSprite.getTextureRect().height);
-			text.setPosition(pos);
-			m_informationWindow.draw(text);
-
-			//Also get information of the nearest organism
-			if (organisms.size() > 0)
+			if ((*organisms).size() > 0)
 			{
-				Organism* nearstOrganism = &organisms[0];
-				for (vector<Organism>::iterator it = organisms.begin(); it != organisms.end(); ++it)
+				Organism* nearstOrganism = &(*organisms)[0];
+				for (vector<Organism>::iterator it = (*organisms).begin(); it != (*organisms).end(); ++it)
 				{
 					if (fabs(it->getPositionX() - getMousePositionX())*fabs(it->getPositionX() - getMousePositionX()) + fabs(it->getPositionY() - getMousePositionY())*fabs(it->getPositionY() - getMousePositionY())
 						< fabs(nearstOrganism->getPositionX() - getMousePositionX())*fabs(nearstOrganism->getPositionX() - getMousePositionX()) + fabs(nearstOrganism->getPositionY() - getMousePositionY())*fabs(nearstOrganism->getPositionY() - getMousePositionY()))
@@ -339,51 +440,13 @@ void GraphicHandler::getEvents(
 						nearstOrganism = &(*it);
 					}
 				}
-
-				//Shape for the organism
-				sf::CircleShape tmpShape(100.0 / m_zPosition * 1.0);
-
-				//resizes proportional to the size of the organism
-				tmpShape.setRadius(10.0 * nearstOrganism->getSize());
-				tmpShape.setPosition(0.0, WINDOW_INFORMATION_HEIGHT / 2.0);
-				sf::Color color(nearstOrganism->getRed(), nearstOrganism->getGreen(), nearstOrganism->getBlue(), nearstOrganism->getAlpha());
-				tmpShape.setFillColor(color);
-				m_informationWindow.draw(tmpShape);
-
-				//Add the different information lines for the entity
-				string = "Organism on PositionX: " + to_string(nearstOrganism->getPositionX()) + "\tY: " + to_string(nearstOrganism->getPositionY());
-				text.setString(string);
-				pos = sf::Vector2f(0.0, WINDOW_INFORMATION_HEIGHT / 2.0 + 2.0 * 10.0 * nearstOrganism->getSize());
-				text.setPosition(pos);
-				m_informationWindow.draw(text);
-
-				string = "Energy: " + to_string(nearstOrganism->getEnergy());
-				text.setString(string);
-				pos = sf::Vector2f(0.0, WINDOW_INFORMATION_HEIGHT / 2.0 + text.getCharacterSize() + 2.0 * 10.0 * nearstOrganism->getSize());
-				text.setPosition(pos);
-				m_informationWindow.draw(text);
-
-				string = "Temperature: " + to_string(nearstOrganism->getTemperature());
-				text.setString(string);
-				pos = sf::Vector2f(0.0, WINDOW_INFORMATION_HEIGHT / 2.0 + 2.0 * text.getCharacterSize() + 2.0 * 10.0 * nearstOrganism->getSize());
-				text.setPosition(pos);
-				m_informationWindow.draw(text);
-
+				_nearestOrganism = nearstOrganism;
 			}
-			m_informationWindow.display();
-
-			//Rescales the sprites to the distance view back
-			m_grassSprite.setScale(sf::Vector2f(1.0 * 100 / m_zPosition / (m_grassTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / m_zPosition / (m_grassTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
-			m_waterSprite.setScale(sf::Vector2f(1.0 * 100 / m_zPosition / (m_waterTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / m_zPosition / (m_waterTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
-			m_stoneSprite.setScale(sf::Vector2f(1.0 * 100 / m_zPosition / (m_stoneTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / m_zPosition / (m_stoneTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
-			m_snowSprite.setScale(sf::Vector2f(1.0 * 100 / m_zPosition / (m_snowTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / m_zPosition / (m_snowTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
-
+			else
+			{
+				_nearestOrganism = NULL;
+			}
 		}
-
-		//Gets the mouse positon and updates it
-		m_mousePositionX = sf::Mouse::getPosition(m_gameWindow).x;
-		m_mousePositionY = sf::Mouse::getPosition(m_gameWindow).y;
-
 	}
 }
 
@@ -392,14 +455,14 @@ void GraphicHandler::getEvents(
 int GraphicHandler::getMousePositionX()
 {
 	int xPosition = 0;
-	xPosition = (int)((m_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - (m_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X);
-	int intervall = abs(xPosition - (int)((m_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X + (m_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X));
-	int returnValue = xPosition + (int)(intervall * ((float)m_mousePositionX / (float)WINDOW_WIDTH));
-	if (xPosition + (int)(intervall * ((float)m_mousePositionX / (float)WINDOW_WIDTH)) < 0)
+	xPosition = (int)((_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X);
+	int intervall = abs(xPosition - (int)((_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X + (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X));
+	int returnValue = xPosition + (int)(intervall * ((float)_mousePositionX / (float)WINDOW_WIDTH));
+	if (xPosition + (int)(intervall * ((float)_mousePositionX / (float)WINDOW_WIDTH)) < 0)
 	{
 		returnValue = 0;
 	}
-	if (xPosition + (int)(intervall * ((float)m_mousePositionX / (float)WINDOW_WIDTH)) > SIMULATION_X)
+	if (xPosition + (int)(intervall * ((float)_mousePositionX / (float)WINDOW_WIDTH)) > SIMULATION_X)
 	{
 		returnValue = SIMULATION_X - 1;
 	}
@@ -411,14 +474,14 @@ int GraphicHandler::getMousePositionX()
 int GraphicHandler::getMousePositionY()
 {
 	int yPosition = 0;
-	yPosition = (int)((m_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - m_zPosition / (2.0 * 100.0) * (float)SIMULATION_Y);
-	int intervall = abs(yPosition - (int)((m_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y + (m_zPosition / (2.0 * 100.0)) * (float)SIMULATION_Y));
-	int returnValue = yPosition + (int)(intervall * ((float)m_mousePositionY / (float)WINDOW_HEIGHT));
-	if (yPosition + (int)(intervall * ((float)m_mousePositionY / (float)WINDOW_HEIGHT)) < 0)
+	yPosition = (int)((_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - _zPosition / (2.0 * 100.0) * (float)SIMULATION_Y);
+	int intervall = abs(yPosition - (int)((_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y + (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_Y));
+	int returnValue = yPosition + (int)(intervall * ((float)_mousePositionY / (float)WINDOW_HEIGHT));
+	if (yPosition + (int)(intervall * ((float)_mousePositionY / (float)WINDOW_HEIGHT)) < 0)
 	{
 		returnValue = 0;
 	}
-	if (yPosition + (int)(intervall * ((float)m_mousePositionY / (float)WINDOW_HEIGHT)) > SIMULATION_Y)
+	if (yPosition + (int)(intervall * ((float)_mousePositionY / (float)WINDOW_HEIGHT)) > SIMULATION_Y)
 	{
 		returnValue = SIMULATION_Y - 1;
 	}

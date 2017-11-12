@@ -39,12 +39,10 @@ public:
 	static mt19937 mersenne_generator;
 
 private:
-	int m_SmiulationHeight;
-	int m_SimulationWidth;
-	vector<vector<Tile>> m_tiles = vector<vector<Tile>>(SIMULATION_Y, vector<Tile>(SIMULATION_X));
+	vector<vector<Tile>> _tiles = vector<vector<Tile>>(SIMULATION_Y, vector<Tile>(SIMULATION_X));
 
 	//Height map properties
-	double m_heightMax;
-	double m_heightMin;
+	double _heightMax;
+	double _heightMin;
 };
 

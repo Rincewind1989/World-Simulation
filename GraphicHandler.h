@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include "Simulation.h"
 #include "Tile.h"
 #include "Organism.h"
 #include "SimulationData.h"
@@ -12,21 +13,27 @@ class GraphicHandler
 {
 public:
 	GraphicHandler(
-		vector<double> heightMaxMin);
+		Simulation &simulation);
 	~GraphicHandler();
 
+
 	//Prints the game
-	void printWorld(
-		vector<vector<Tile>> &tiles);
+	void printWorld();
 
 	//Prints the entities of the game
-	void printEntities(
-		vector<Organism> &organisms);
+	void printEntities();
+
+	//Print information window
+	void printInformation();
+
+	//Clear the display
+	void clear();
+
+	//Draws the display
+	void display();
 
 	//Grabs the events on both windows
-	void getEvents(
-		vector<vector<Tile>> &tiles,
-		vector<Organism> &organisms);
+	void getEvents();
 
 	//Returns the x position of the mouse
 	int GraphicHandler::getMousePositionX();
@@ -37,45 +44,56 @@ public:
 private:
 
 	//Columns and rows for graphics
-	int m_Simulationx = SIMULATION_X;
-	int m_Simulationy = SIMULATION_Y;
-	int m_WindowHeight = WINDOW_HEIGHT;
-	int m_WidnowWidth = WINDOW_WIDTH;
+	int _Simulationx = SIMULATION_X;
+	int _Simulationy = SIMULATION_Y;
+	int _WindowHeight = WINDOW_HEIGHT;
+	int _WidnowWidth = WINDOW_WIDTH;
 
 	//The Font of the text
-	sf::Font m_font;
+	sf::Font _font;
 
 	//Color for clearing screen
-	sf::Color m_color = sf::Color(100,100,100);
+	sf::Color _color = sf::Color(100,100,100);
 
 	//The Windows for the neural network and the game
-	sf::RenderWindow m_gameWindow;
-	sf::RenderWindow m_informationWindow;
+	sf::RenderWindow _gameWindow;
+
+	//Pointer to the simulation
+	Simulation* _simulation;
+
+	//Saved objects that are printed on the information screen
+	Tile* _tileP = new Tile;
+	sf::Sprite _tileSprite;
+	double _tilePositionX;
+	double _tilePositionY;
+	Organism* _nearestOrganism;
+	double _fitness;
+	double _highestFitness;
 
 	//The textures need for drawing
-	sf::Texture m_grassTexture;
-	sf::Texture m_waterTexture;
-	sf::Texture m_snowTexture;
-	sf::Texture m_stoneTexture;
+	sf::Texture _grassTexture;
+	sf::Texture _waterTexture;
+	sf::Texture _snowTexture;
+	sf::Texture _stoneTexture;
 
 	//Sprite variable to draw to the window
-	sf::Sprite m_grassSprite;
-	sf::Sprite m_waterSprite;
-	sf::Sprite m_snowSprite;
-	sf::Sprite m_stoneSprite;
+	sf::Sprite _grassSprite;
+	sf::Sprite _waterSprite;
+	sf::Sprite _snowSprite;
+	sf::Sprite _stoneSprite;
 
 	//Camera viewer position
-	double m_zPosition = CAMERA_Z_DISTANCE;
-	int m_xPosition = WINDOW_WIDTH / 2.0;
-	int m_yPosition = WINDOW_HEIGHT / 2.0;
+	double _zPosition = CAMERA_Z_DISTANCE;
+	int _xPosition = WINDOW_WIDTH / 2.0;
+	int _yPosition = WINDOW_HEIGHT / 2.0;
 
 	//Height map properties
-	double m_heightMax;
-	double m_heightMin;
+	double _heightMax;
+	double _heightMin;
 
 	//Mouse properties
-	double m_mousePositionX;
-	double m_mousePositionY;
+	double _mousePositionX;
+	double _mousePositionY;
 
 };
 

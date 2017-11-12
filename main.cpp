@@ -11,18 +11,23 @@ int main()
 	cout << "Creating simulation...\n";
 	Simulation simulation;
 	cout << "Creating graphichandler...\n";
-	GraphicHandler graphicHandler(simulation.getLandscape().getHeightMaxMin());
+	GraphicHandler graphicHandler(simulation);
 
 	cout << "Running simulation...\n";
 	while (true)
 	{
+		
 		//Update Simulation
-		simulation.updateOrganisms();
+		simulation.deltaTime();
+		simulation.updateSimulation();
 
 		//Update Graphics
-		graphicHandler.printWorld(simulation.getLandscape().getTiles());
-		graphicHandler.printEntities(simulation.getOrganisms());
-		graphicHandler.getEvents(simulation.getLandscape().getTiles(), simulation.getOrganisms());
+		graphicHandler.clear();
+		graphicHandler.printWorld();
+		graphicHandler.printEntities();
+		graphicHandler.printInformation();
+		graphicHandler.display();
+		graphicHandler.getEvents();
 
 	}
 

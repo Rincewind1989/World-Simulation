@@ -3,6 +3,7 @@
 #include <random>
 
 #include "SimulationData.h"
+#include "NeuralNetwork.h"
 
 using namespace std;
 
@@ -10,6 +11,7 @@ class Organism
 {
 public:
 	Organism();
+	Organism(Organism &father, Organism &mother);
 	~Organism();
 
 	//Getters/Setters
@@ -34,6 +36,9 @@ public:
 
 	void addEnergy(
 		double energy);
+
+	void addEnergyViaFood(
+		double food);
 
 	double getEnergy();
 
@@ -75,6 +80,14 @@ public:
 
 	double getAlpha();
 
+	double &getFitness();
+
+	void setFitness(double &fitness);
+
+	void addFitness(double &fitness);
+
+	NeuralNetwork &getNeuralNetwork();
+
 
 	//Random generator 
 	double randomReal(
@@ -93,21 +106,27 @@ private:
 
 	//Organism Properties
 	//X-Y Position
-	double m_positionX;
-	double m_positionY;
-	double m_size = 1.0;
+	double _positionX;
+	double _positionY;
+	double _size = 1.0;
 
-	int m_red = randomInt(0,255);
-	int m_green = randomInt(0, 255);
-	int m_blue = randomInt(0, 255);
-	int m_alpha = randomInt(128, 255);
+	int _red = randomInt(0,255);
+	int _green = randomInt(0, 255);
+	int _blue = randomInt(0, 255);
+	int _alpha = randomInt(128, 255);
+
+	double _fitness = 0.0;
 
 	//Body funtionalities
-	double m_energyHeatProduction = ENERGY_HEAT_PRODUCTION;
-	double m_heatLoss = HEAT_LOSS_FACTOR;
+	double _energyHeatProduction = ENERGY_HEAT_PRODUCTION;
+	double _heatLoss = HEAT_LOSS_FACTOR;
+	double _foodEnergyFactor = FOOD_ENERGY_FACTOR;
 
 	//Condition
-	double m_energy = STARTING_ENERGY;
-	double m_temperature = STARTING_TEMPERATURE;
+	double _energy = STARTING_ENERGY;
+	double _temperature = STARTING_TEMPERATURE;
+
+	//Brain...kind of
+	NeuralNetwork _neuralNetwork;
 };
 

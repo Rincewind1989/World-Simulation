@@ -15,14 +15,14 @@ Tile::~Tile()
 //Sets the height of the tile
 void Tile::setHeight(double height)
 {
-	m_height = height;
+	_height = height;
 }
 
 
 //Returns the height of the tile by index
-double Tile::getHeight()
+double &Tile::getHeight()
 {
-	return m_height;
+	return _height;
 }
 
 
@@ -30,7 +30,7 @@ double Tile::getHeight()
 void Tile::setTemperature(
 	double temperature)
 {
-	m_temperature = temperature;
+	_temperature = temperature;
 }
 
 
@@ -38,14 +38,14 @@ void Tile::setTemperature(
 void Tile::addTemperature(
 	double Temperature)
 {
-	m_temperature += Temperature;
+	_temperature += Temperature;
 }
 
 
 //Returns the temperature of the tile
-double Tile::getTemperature()
+double &Tile::getTemperature()
 {
-	return m_temperature;
+	return _temperature;
 }
 
 
@@ -53,7 +53,11 @@ double Tile::getTemperature()
 void Tile::setFood(
 	double food)
 {
-	m_food = food;
+	_food = food;
+	if (_food < 0.0)
+	{
+		_food = 0.0;
+	}
 }
 
 
@@ -61,12 +65,16 @@ void Tile::setFood(
 void Tile::addFood(
 	double food)
 {
-	m_food += food;
+	_food += food;
+	if (_food < 0.0)
+	{
+		_food = 0.0;
+	}
 }
 
 
 //Returns the food value of this tile
-double Tile::getFood()
+double &Tile::getFood()
 {
-	return m_food;
+	return _food;
 }
