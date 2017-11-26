@@ -49,6 +49,18 @@ double &Tile::getTemperature()
 }
 
 
+void Tile::setOrignTemperature(
+	double Temperature)
+{
+	_originalTemperature = Temperature;
+}
+
+double &Tile::getOrignTemperature()
+{
+	return _originalTemperature;
+}
+
+
 //Sets the food value for this tile
 void Tile::setFood(
 	double food)

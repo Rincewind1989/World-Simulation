@@ -12,8 +12,7 @@ using namespace std;
 class GraphicHandler
 {
 public:
-	GraphicHandler(
-		Simulation &simulation);
+	GraphicHandler(Simulation &simulation);
 	~GraphicHandler();
 
 
@@ -64,9 +63,9 @@ private:
 	//Saved objects that are printed on the information screen
 	Tile* _tileP = new Tile;
 	sf::Sprite _tileSprite;
+	Organism* INFORMATION_ORGANISM;
 	double _tilePositionX;
 	double _tilePositionY;
-	Organism* _nearestOrganism;
 	double _fitness;
 	double _highestFitness;
 

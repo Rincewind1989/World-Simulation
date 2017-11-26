@@ -1,72 +1,115 @@
 #pragma once
 
+//UI variables
+extern bool TIME_LAPSE;
+extern bool GRAPHICS_ON;
+
 //World properties
-static const double FREQUENCY = 2.0;
-static const int OCTAVES = 7;
+//Perlin Noise Properties
+extern const double FREQUENCY;	//Frequency in which the perlin noise works, highest frequency results in more bumpy terrain
+extern const int OCTAVES;			//Octaves are the number of reshaping, highest octaves result in a more natural terrain
 
-static const int SIMULATION_X = 256;
-static const int SIMULATION_Y = 256;
+//World size
+extern const int SIMULATION_X;
+extern const int SIMULATION_Y;
 
-static const double WATER_LEVEL = 0.0;		//Water level is at sign changing
-static const double GRASS_LEVEL = 0.45;
-static const double STONE_LEVEL = 0.75;
+//World height terrain type
+extern const double WATER_LEVEL;	//Highets level Water occurs
+extern const double GRASS_LEVEL;		//Highets level Grass occurs
+extern const double STONE_LEVEL;		//Highets level Stone occurs
 
-static const double HEIGHT_MULITPLICATOR = 50.0;
-static const double OPT_TEMPERATURE = 25.0;
-static const double LOW_TEMPERATURE = -20.0;
-static const double TEMPERATURE_FLUCTUATION_FACTOR = 10.0;
+//Environment properties
+extern const double HEIGHT_MULITPLICATOR;	//Height factor which is multiplies on the height to get a more realistic height
+extern const double OPT_TEMPERATURE;			//The optimum temperature that can occur naturally
+extern const double LOW_TEMPERATURE;		//The lowest temperature that can occur
+extern const double TEMPERATURE_FLUCTUATION_FACTOR;	//Factor for the fluctation of the temperaturemap with perlin noise
 
-static const double FOOD_TEMPERATURE_FACTOR = 1.0;
-static const double FOOD_HEIGHT_FACTOR = 1.0;
-static const double FOOD_NOISE_FACTOR = 5.0;
+//Food distribution and growth factor
+extern const double FOOD_TEMPERATURE_FACTOR;	//Multiplyfactor for the food growth depending on the temperature
+extern const double FOOD_HEIGHT_FACTOR;		//Multiplyfactor for the food growth depending on the height
+extern const double FOOD_NOISE_FACTOR;		//Factor for the fluctuation of the food for the perlin noise
+extern const double MAX_FOOD_ON_TILE;			//Maximum food that can be on a tile
+extern const double FOOD_GROWTH_FACTOR;		//Factor with which the food growths
+extern const double CHANCE_FOOD_GROWTH;		//Chance that food growth on a tile per tick
+extern const double CHANCE_BIG_FOOD_GROWTH;	//Chance that a big food growth happens on a tile per tick
 
-static const double MAX_FOOD_ON_TILE = 7.0;
-static const double FOOD_GROWTH_FACTOR = 0.05;
-static const double CHANCE_FOOD_GROWTH = 1.0;
-static const double CHANCE_BIG_FOOD_GROWTH = 0.01;
+//Body heat flux towards environment temperature
+extern const double TEMPERATURE_AIR_FLUX_FACTOR;
 
 //Graphic properties
-static const int WINDOW_WIDTH = SIMULATION_X * 4;
-static const int WINDOW_HEIGHT = SIMULATION_Y * 3;
-static const int CAMERA_Z_DISTANCE = 60;
+//World Simulation Window properties
+extern const int WINDOW_WIDTH;
+extern const int WINDOW_HEIGHT;
+extern const int CAMERA_Z_DISTANCE;
+extern const double SIZE_ORGANISMS;
+extern const double ALPHA_MIN;
 
-static const int WINDOW_INFORMATION_WIDTH = 500;
-static const int WINDOW_INFORMATION_HEIGHT = 500;
-
-static const double INFORMATION_WINDOW_SPRITE_SIZE = .1;
-
-//Life properties
-static const int STARTING_NUMBER_ORGANISM = 100;
-static const double SIZE_ORGANISMS = 1.0;
-static const double ENERGY_CONSUMPTION_FACTOR = 1.0;
-static const double STARTING_ENERGY = 200.0;
-static const double STARTING_TEMPERATURE = 37.0;
-static const double ENERGY_HEAT_PRODUCTION = 5.0;
-static const double HEAT_LOSS_FACTOR = 0.7;
-
-static const double MOVEMENT_SPEED = 1.0;
-static const double MOVEMENT_ENERGY_LOST = 5.0;
-static const double CONSUMPTION_FACTOR = 5.0;
-static const double FOOD_ENERGY_FACTOR = 1.5;
-
-//Network properties
-static const double MIN_RANDOM_WEIGHT = -5.0;
-static const double MAX_RANDOM_WEIGHT = 5.0;
-
-static const int ADJACENT_TILES_RADIUS = 0;
-static const int INPUTS_FOR_BODY_PROPERTIES = 2;
-
-static const int NUM_LAYERS = 3;
-static const int INPUT_NEURONS = 2 * (2 * ADJACENT_TILES_RADIUS + 1) * (2 * ADJACENT_TILES_RADIUS + 1) + INPUTS_FOR_BODY_PROPERTIES;
-static const int OUTPUT_NEURONS = 2;
-static const int HIDDEN_NEURONS = INPUT_NEURONS / 2;
-
-static const double CHANCE_MUTATE = 0.07;
-static const double MUTATION_PERTUBATE_PROCENT = 0.1;
-static const double MUTATION_PERTUBATE_ADD = 1.0;
-
-static const double SIGMOID_STRETCHX_FACTOR = 0.0005;
-static const double SIGMOID_STRETCHY_FACTOR = 1.5;
+//Information window properties
+extern const int WINDOW_INFORMATION_WIDTH;
+extern const int WINDOW_INFORMATION_HEIGHT;
+extern const double INFORMATION_WINDOW_SPRITE_SIZE;
 
 //Network graphics
-static const double RADIUS_NEURON = 3.0;
+extern const double RADIUS_NEURON;	//Radius of a drawn neuron on the information window
+
+//Life properties
+//Organism properties
+extern const int STARTING_NUMBER_ORGANISM;
+extern const double ENERGY_CONSUMPTION_FACTOR;	//Consumption factor for every organism to produce heat
+extern const double STARTING_ENERGY;			//Starting energy for a organism
+extern const double STARTING_TEMPERATURE;		//Starting temperature for a organism
+extern const double ENERGY_HEAT_PRODUCTION;		//Factor in which energy is changed into temperature
+extern const double HEAT_LOSS_FACTOR;				//Loss of the body temperature towards the environment
+extern const double MOVEMENT_SPEED;				//Movementspeed of the organisms
+extern const double MOVEMENT_ENERGY_LOST;			//Loss of energy based on the movementspeed
+extern const double CONSUMPTION_FACTOR;			//Factor with which the organisms consume food from tile
+extern const double FOOD_ENERGY_FACTOR;			//Factor with which food is conversed into energy
+extern const double LOWEST_HEAT_LOSS_VALUE;
+extern const double HIGHEST_HEAT_LOSS_VALUE;
+extern const double NEWLIFE_ENERGY_CONSUMPTION;	//Energy needed to breed a new offspring
+extern const double COLD_TEMP_DEATH;
+extern const double HEAT_TEMP_DEATH;
+
+extern const double SIZE_ORGANISM;				//Size of the organisms
+
+extern const double ATTACK_DAMAGE;				//Attack damage of an organism
+
+extern const double SIZE_ENERGY_LOSS_FACTOR;	//Loss of energy based on the size factor
+
+extern const double OPTIM_TEMPERATURE;			//Optim temperature the organism needs to work at 100% (Like eating,moving,etc.)
+
+extern const double MUTATE_COLOR;				//Chance that a color mutates
+
+//Network properties
+extern const double MIN_RANDOM_WEIGHT;
+extern const double MAX_RANDOM_WEIGHT;
+
+extern const int ADJACENT_TILES_RADIUS;			//Radius of the organism's sight
+extern const int INPUTS_FOR_BODY_PROPERTIES;	//Inputs of the body properties for the neural network(Like bodytemperature,bodyenergy,etc.)
+extern const int NUMBER_NEXT_ENTITES;			//Number of next entities that can be identified
+
+/*Reminder! What can the organisms detect.
+-Adjacent tiles radius - temperature, food, number entities
+-1 Bias
+-Inputs from the body - temperature, energy
+-x next entities and their colours
+
+
+What can the organisms output
+-Move x-y axes (2 Outputs)
+-Give birth by asexuall
+
+*/
+extern const int NUM_LAYERS;	//Number of layers (This includes input and output layer)
+extern const int INPUT_NEURONS; //Number of need inputneurons to cover all inputs
+extern const int OUTPUT_NEURONS;	//Number of output Neurons to cover all outputs needed
+extern const int HIDDEN_NEURONS; //Hidden neurons
+
+extern const double CHANCE_MUTATE;	//Chance that a mutation of a weight occurs
+extern const double MUTATION_PERTUBATE_PROCENT;	//Procentage with which a muation pertubates a weight
+extern const double MUTATION_PERTUBATE_ADD;	//Absolute value with which a mutation pertubates a weight
+
+extern const double SIGMOID_STRETCHX_FACTOR;	//Stretch factor for the sigmoid func on the x-axes
+extern const double SIGMOID_STRETCHY_FACTOR;	//Stretch factor for the sigmoid func on the y-axes
+
+extern const double RADIUS_NEXT_ENTITIES;	//Radius in which the next entities are recognized

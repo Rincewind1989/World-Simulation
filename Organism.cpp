@@ -1,54 +1,141 @@
 #include "Organism.h"
 
-#include <iostream>
-
 Organism::Organism()
 {
 	_positionX = randomReal(0, (double)SIMULATION_X);
 	_positionY = randomReal(0, (double)SIMULATION_Y);
+
+	_red = randomInt(0, 255);
+	_green = randomInt(0, 255);
+	_blue = randomInt(0, 255);
+	_alpha = randomInt(128, 255);
+}
+
+//Asexual breeding for an organism
+Organism Organism::asexualBreeding()
+{
+	Organism child;
+	vector<double> weights = _neuralNetwork.getWeights();
+	child.getNeuralNetwork().setWeights(weights);
+	child.getNeuralNetwork().processMutations();
+	child._positionX = _positionX + randomReal(-10.0, 10.0);
+	child._positionY = _positionY + randomReal(-10.0, 10.0);
+	if (_positionX > SIMULATION_X)
+	{
+		_positionX = SIMULATION_X;
+	}
+	if (_positionX < 0)
+	{
+		_positionX = 0;
+	}
+	if (_positionY > SIMULATION_Y)
+	{
+		_positionY = SIMULATION_Y;
+	}
+	if (_positionY < 0)
+	{
+		_positionY = 0;
+	}
+
+	child._red = _red + mutateStat(_red);
+	child._green = _green + mutateStat(_green);
+	child._blue = _blue + mutateStat(_blue);
+	child._alpha = _alpha + mutateStat(_alpha);
+	child._size = _size + mutateStat(_size);
+
+
+	if (_alpha < ALPHA_MIN)
+	{
+		child._alpha = ALPHA_MIN;
+	}
+
+	return child;
 }
 
 
-Organism::Organism(Organism &father, Organism &mother)
+//sexual breeding
+Organism::Organism(const Organism &father, const Organism &mother)
 {
-	Organism child;
-	vector<double> weights = vector<double>(father.getNeuralNetwork().getWeights().size());
+
+	vector<double> weights = vector<double>(father._neuralNetwork.getWeights().size());
 	if (randomInt(0, 1) == 0)
 	{
 		for (int i = 0; i < weights.size(); i++)
 		{
-			if (i % 2)
+			if (i % 2 == 0)
 			{
-				weights[i] = father.getNeuralNetwork().getWeights()[i];
+				weights[i] = father._neuralNetwork.getWeights()[i];
 			}
 			else
 			{
-				mother.getNeuralNetwork().getWeights()[i];
+				weights[i] = mother._neuralNetwork.getWeights()[i];
 			}
 		}
-		child.getNeuralNetwork().setWeights(weights);
-		child.getNeuralNetwork().processMutations();
-		_positionX = father.getPositionX();
-		_positionY = father.getPositionY();
+		getNeuralNetwork().setWeights(weights);
+		getNeuralNetwork().processMutations();
+		_positionX = father.getPositionX() + randomReal(-10.0, 10.0);
+		_positionY = father.getPositionY() + randomReal(-10.0, 10.0);
+
+		_red = father.getRed() + mutateStat(father.getRed());
+		_green = father.getGreen() + mutateStat(father.getGreen());
+		_blue = father.getBlue() + mutateStat(father.getBlue());
+		_alpha = father.getAlpha() + mutateStat(father.getAlpha());
+		_size = father.getSize() + mutateStat(father.getSize());
+
+
+		if (_alpha < ALPHA_MIN)
+		{
+			_alpha = ALPHA_MIN;
+		}
 	}
 	else
 	{
 		for (int i = 0; i < weights.size(); i++)
 		{
-			if (i % 2)
+			if (i % 2 == 0)
 			{
-				mother.getNeuralNetwork().getWeights()[i];				
+				weights[i] = mother._neuralNetwork.getWeights()[i];
 			}
 			else
 			{
-				weights[i] = father.getNeuralNetwork().getWeights()[i];
+				weights[i] = father._neuralNetwork.getWeights()[i];
 			}
 		}
-		child.getNeuralNetwork().setWeights(weights);
-		child.getNeuralNetwork().processMutations();
-		_positionX = mother.getPositionX();
-		_positionY = mother.getPositionY();
-	}	
+		getNeuralNetwork().setWeights(weights);
+		getNeuralNetwork().processMutations();
+		_positionX = mother.getPositionX() + randomReal(-10.0, 10.0);
+		_positionY = mother.getPositionY() + randomReal(-10.0, 10.0);
+
+		_red = mother.getRed() + mutateStat(mother.getRed());
+		_green = mother.getGreen() + mutateStat(mother.getGreen());
+		_blue = mother.getBlue() + mutateStat(mother.getBlue());
+		_alpha = mother.getAlpha() + mutateStat(mother.getAlpha());
+		_size = mother.getSize() + mutateStat(mother.getSize());
+
+
+		if (_alpha < ALPHA_MIN)
+		{
+			_alpha = ALPHA_MIN;
+		}
+	}
+
+	if (_positionX > SIMULATION_X)
+	{
+		_positionX = SIMULATION_X;
+	}
+	if (_positionX < 0)
+	{
+		_positionX = 0;
+	}
+	if (_positionY > SIMULATION_Y)
+	{
+		_positionY = SIMULATION_Y;
+	}
+	if (_positionY < 0)
+	{
+		_positionY = 0;
+	}
+
 }
 
 
@@ -57,167 +144,173 @@ Organism::~Organism()
 }
 
 
+//Mutates the color of the organism by chance
+double Organism::mutateStat(double value)
+{
+	if (randomReal(0.0, 1.0) < MUTATE_COLOR)
+	{
+		return value * randomReal(-0.1, 0.1);
+	}
+}
+
+
 //Getters/Setters
-void Organism::setPositionX(
-	double positionX)
+void Organism::setPositionX(const double &positionX)
 {
 	_positionX = positionX;
 }
 
 
-void Organism::addPositionX(
-	double positionX)
+void Organism::addPositionX(const double &positionX)
 {
 	_positionX += positionX;
 }
 
 
-double Organism::getPositionX()
+const double &Organism::getPositionX() const
 {
 	return _positionX;
 }
 
 
-void Organism::setPositionY(
-	double positionY)
+void Organism::setPositionY(const double &positionY)
 {
 	_positionY = positionY;
 }
 
 
-void Organism::addPositionY(
-	double positionY)
+void Organism::addPositionY(const double &positionY)
 {
 	_positionY += positionY;
 }
 
 
-double Organism::getPositionY()
+const double &Organism::getPositionY() const
 {
 	return _positionY;
 }
 
 
-void Organism::setEnergy(
-	double energy)
+void Organism::setEnergy(const double &energy)
 {
 	_energy = energy;
 }
 
 
-void Organism::addEnergy(
-	double energy)
+void Organism::addEnergy(const double &energy)
 {
 	_energy += energy;
 }
 
 
-void Organism::addEnergyViaFood(
-	double food)
+void Organism::addEnergyViaFood(const double &food)
 {
 	_energy += _foodEnergyFactor * food;
 }
 
 
-double Organism::getEnergy()
+const double &Organism::getEnergy() const
 {
 	return _energy;
 }
 
 
-void Organism::setTemperature(
-	double temperature)
+void Organism::setTemperature(const double &temperature)
 {
 	_temperature = temperature;
 }
 
 
-void Organism::addTemperature(
-	double temperature)
+void Organism::addTemperature(const double &temperature)
 {
 	_temperature += temperature;
 }
 
 
-double Organism::getTemperature()
+const double &Organism::getTemperature()
 {
 	return _temperature;
 }
 
 
-void Organism::setHeatEnergyProduction(
-	double heatEnergyProduction)
+void Organism::setHeatEnergyProduction(const double &heatEnergyProduction)
 {
 	_energyHeatProduction = heatEnergyProduction;
 }
 
 
-double Organism::getHeatEnergyProduction()
+const double Organism::getHeatEnergyProduction() const
 {
 	return _energyHeatProduction;
 }
 
 
-void Organism::setSize(
-	double size)
+void Organism::setHeatLossFactor(const double &heatLossFactor)
+{
+	_heatLoss = heatLossFactor;
+}
+
+const double &Organism::getHeatLossFactor() const
+{
+	return _heatLoss;
+}
+
+
+void Organism::setSize(const double &size)
 {
 	_size = size;
 }
 
 
-double Organism::getSize()
+const double &Organism::getSize() const
 {
 	return _size;
 }
 
 
-void Organism::setRed(
-	int red)
+void Organism::setRed(const int &red)
 {
 	_red = red;
 }
 
 
-double Organism::getRed()
+const double &Organism::getRed() const
 {
 	return _red;
 }
 
 
-void Organism::setGreen(
-	int green)
+void Organism::setGreen(const int &green)
 {
 	_green = green;
 }
 
 
-double Organism::getGreen()
+const double &Organism::getGreen() const
 {
 	return _green;
 }
 
 
-void Organism::setBlue(
-	int blue)
+void Organism::setBlue(const int &blue)
 {
 	_blue = blue;
 }
 
 
-double Organism::getBlue()
+const double &Organism::getBlue() const
 {
 	return _blue;
 }
 
 
-void Organism::setAlpha(
-	int alpha)
+void Organism::setAlpha(const int &alpha)
 {
 	_alpha = alpha;
 }
 
 
-double Organism::getAlpha()
+const double &Organism::getAlpha() const
 {
 	return _alpha;
 }
@@ -229,36 +322,45 @@ NeuralNetwork &Organism::getNeuralNetwork()
 }
 
 
-double &Organism::getFitness()
+const double &Organism::getFitness() const
 {
 	return _fitness;
 }
 
 
-void Organism::setFitness(double &fitness)
+void Organism::setFitness(const double &fitness)
 {
 	_fitness = fitness;
 }
 
 
-void Organism::addFitness(double &fitness)
+void Organism::addFitness(const double &fitness)
 {
 	_fitness += fitness;
 }
 
 
+void Organism::setDied(const bool dead)
+{
+	_dead = dead;
+}
+
+
+
+bool Organism::getDied()
+{
+	return _dead;
+}
+
+
 //Random engine call
-double Organism::randomReal(
-	const double lowerBoundary,
-	const double upperBoundary)
+double Organism::randomReal(const double lowerBoundary, const double upperBoundary)
 {
 	uniform_real_distribution<double> distribution_real(lowerBoundary, upperBoundary);
 	return distribution_real(mersenne_generator);
 }
 
-int Organism::randomInt(
-	const int lowerBoundary,
-	const int upperBoundary)
+int Organism::randomInt(const int lowerBoundary, const int upperBoundary)
 {
 	uniform_int_distribution<int> distribution_int(lowerBoundary, upperBoundary);
 	return distribution_int(mersenne_generator);

@@ -24,6 +24,11 @@ public:
 
 	double &getTemperature();
 
+	void setOrignTemperature(
+		double Temperature);
+
+	double &getOrignTemperature();
+
 	void setFood(
 		double food);
 
@@ -35,6 +40,7 @@ public:
 private:
 	double _height = 0.0;
 	double _temperature = 25.0;
+	double _originalTemperature = 25.0;
 	double _food = 0.0;
 };
 

@@ -13,22 +13,20 @@ public:
 	~NeuralNetwork();
 
 	//Getters/Setters
-	vector<double> &getOutputs();
-
-	void printInfo();
+	const vector<double> &getOutputs() const;
 
 	//Feeds the momentarily saved input forward through the network
 	void feedForward(
 		const vector<double> &inputs);
 
 	//Sigmoid functionas the activation function
-	double sigmoid(
+	const double sigmoid(
 		const double &sum);
 
 	//Getters/Setters
-	vector<double> &getWeights();
+	const vector<double> &getWeights() const;
 
-	void setWeights(vector<double> &weights);
+	void setWeights(const vector<double> &weights);
 	
 	//Adds random mutations to the weights
 	void processMutations();

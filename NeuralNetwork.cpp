@@ -1,7 +1,5 @@
 #include "NeuralNetwork.h"
 
-
-
 NeuralNetwork::NeuralNetwork()
 {
 	//Creating the network
@@ -35,20 +33,20 @@ NeuralNetwork::~NeuralNetwork()
 
 
 //Getters/Setters
-vector<double> &NeuralNetwork::getOutputs()
+const vector<double> &NeuralNetwork::getOutputs() const
 {
 	return _outputs;
 }
 
 
 //Getters/Setters
-vector<double> &NeuralNetwork::getWeights()
+const vector<double> &NeuralNetwork::getWeights() const
 {
 	return _weights;
 }
 
 
-void NeuralNetwork::setWeights(vector<double> &weights)
+void NeuralNetwork::setWeights(const vector<double> &weights)
 {
 	_weights = weights;
 }
@@ -67,21 +65,8 @@ void NeuralNetwork::processMutations()
 }
 
 
-void NeuralNetwork::printInfo()
-{
-	printf("Inputs: %i \t Hiddens: %i \t Outputs: %i \n", _numNeuronsInLayer[0], _numNeuronsInLayer[1], _numNeuronsInLayer[2]);
-	printf("%i \n", _outputs.size());
-	for (int i = 0; i < _outputs.size(); i++)
-	{
-		printf("%f ", _outputs[i]);
-	}
-	printf("\n");
-}
-
-
 //Feeds the momentarily saved input forward through the network
-void NeuralNetwork::feedForward(
-	const vector<double> &inputs)
+void NeuralNetwork::feedForward(const vector<double> &inputs)
 {
 	vector<double> layerOutput = inputs;
 	layerOutput.push_back(1.0);
@@ -93,6 +78,7 @@ void NeuralNetwork::feedForward(
 		tmpOutput = vector<double>(_numNeuronsInLayer[layer]);
 		for (int neuron = 0; neuron < _numNeuronsInLayer[layer]; neuron++)
 		{
+			sum = 0.0;
 			for (int connection = 0; connection < _numNeuronsInLayer[layer - 1] + 1; connection++)
 			{
 				sum += layerOutput[connection] * _weights[neuron + connection*_numNeuronsInLayer[layer]];
@@ -109,26 +95,21 @@ void NeuralNetwork::feedForward(
 }
 
 
-//Sigmoid functionas the activation function
-double NeuralNetwork::sigmoid(
-	const double &sum)
+//Sigmoid function is the activation function
+const double NeuralNetwork::sigmoid(const double &sum)
 {
-	return (SIGMOID_STRETCHY_FACTOR * (1.0 / (1.0 + exp(SIGMOID_STRETCHX_FACTOR * sum))) - 0.5);
+	return (SIGMOID_STRETCHY_FACTOR * ((1.0 / (1.0 + exp(SIGMOID_STRETCHX_FACTOR * sum))) - 0.5));
 }
 
 
 //Random engine call
-double NeuralNetwork::randomReal(
-	const double lowerBoundary,
-	const double upperBoundary)
+double NeuralNetwork::randomReal(const double lowerBoundary, const double upperBoundary)
 {
 	uniform_real_distribution<double> distribution_real(lowerBoundary, upperBoundary);
 	return distribution_real(mersenne_generator);
 }
 
-int NeuralNetwork::randomInt(
-	const int lowerBoundary,
-	const int upperBoundary)
+int NeuralNetwork::randomInt(const int lowerBoundary, const int upperBoundary)
 {
 	uniform_int_distribution<int> distribution_int(lowerBoundary, upperBoundary);
 	return distribution_int(mersenne_generator);

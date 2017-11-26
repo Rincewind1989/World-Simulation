@@ -37,6 +37,9 @@ public:
 	//Update the neural network of all organisms
 	void updateNeuralNetworks();
 
+	//Updates every organism if it attacks nearby entity
+	void updateAttack();
+
 	//Updates the movement of every organism
 	void updateMovement();
 
@@ -46,11 +49,23 @@ public:
 	//Update the energy of all organisms
 	void updateHeatEnergy();
 
+	//Update the energy of all organisms based on size
+	void updateEnergy();
+
 	//Update all food on every tile
 	void updateFood();
 
+	//Update the temperature on every tile
+	void updateTemperature();
+
 	//Create new organisms until the maximum Population is reached
-	void createOrganism();
+	void createOrganismViaAsexuell();
+
+	//Create Organisms if number of Org goes under min value of living organism
+	void createOrganismBeforeExtinction();
+
+	//Create new organisms until the maximum Population is reached
+	void createOrganismViaFitness();
 
 	//Update fitness by time
 	void updateFitness();
@@ -58,14 +73,16 @@ public:
 	//Gets the highest fitness
 	double getHighestFitness();
 
-	//Random generator 
-	double randomReal(
-		const double lowerBoundary,
-		const double upperBoundary);
+	//Gets the efficiency of the body functions based on the optimum temperature
+	double getTempBasedFunction(Organism &organism);
 
-	int randomInt(
-		const int lowerBoundary,
-		const int upperBoundary);
+	//Checks every Organism if it died
+	void checkForDeath();
+
+	//Random generator 
+	double randomReal(const double lowerBoundary, const double upperBoundary);
+
+	int randomInt(const int lowerBoundary, const int upperBoundary);
 
 	static random_device seed_generator;
 	static unsigned seed;
@@ -76,6 +93,7 @@ private:
 	vector<Organism> _organisms;
 	sf::Clock _clock;
 	double _deltaTime;
+	double _accDeltaTime;
 
 	double _highestFitness = 0.0;
 };

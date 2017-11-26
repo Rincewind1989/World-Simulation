@@ -1,5 +1,6 @@
+#include <fstream>
 #include <iostream>
-
+#include "SimulationData.h"
 #include "GraphicHandler.h"
 #include "Simulation.h"
 
@@ -22,13 +23,22 @@ int main()
 		simulation.updateSimulation();
 
 		//Update Graphics
-		graphicHandler.clear();
-		graphicHandler.printWorld();
-		graphicHandler.printEntities();
-		graphicHandler.printInformation();
-		graphicHandler.display();
+		if (GRAPHICS_ON)
+		{
+			graphicHandler.clear();
+			graphicHandler.printWorld();
+			graphicHandler.printEntities();
+			graphicHandler.printInformation();
+			graphicHandler.display();
+		}
 		graphicHandler.getEvents();
-
 	}
+
+}
+
+
+void saveLoad()
+{
+
 
 }

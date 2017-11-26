@@ -11,80 +11,81 @@ class Organism
 {
 public:
 	Organism();
-	Organism(Organism &father, Organism &mother);
+
+	//Asexual breeding for an organism
+	Organism asexualBreeding();
+
+	//Sexuell breeding
+	Organism(const Organism &father, const Organism &mother);
 	~Organism();
 
+	//Mutates the color of the organism by chance
+	double mutateStat(double colorValue);
+
 	//Getters/Setters
-	void setPositionX(
-		double positionX);
+	void setPositionX(const double &positionX);
 
-	void addPositionX(
-		double positionX);
+	void addPositionX(const double &positionX);
 
-	double getPositionX();
+	const double &getPositionX() const;
 
-	void setPositionY(
-		double positionY);
+	void setPositionY(const double &positionY);
 
-	void addPositionY(
-		double positionY);
+	void addPositionY(const double &positionY);
 
-	double getPositionY();
+	const double &getPositionY() const;
 
-	void setEnergy(
-		double energy);
+	void setEnergy(const double &energy);
 
-	void addEnergy(
-		double energy);
+	void addEnergy(const double &energy);
 
-	void addEnergyViaFood(
-		double food);
+	void addEnergyViaFood(const double &food);
 
-	double getEnergy();
+	const double &getEnergy() const;
 
-	void setTemperature(
-		double temperature);
+	void setTemperature(const double &temperature);
 
-	void addTemperature(
-		double temperature);
+	void addTemperature(const double &temperature);
 
-	double getTemperature();
+	const double &getTemperature();
 
-	void setHeatEnergyProduction(
-		double heatEnergyProduction);
+	void setHeatEnergyProduction(const double &heatEnergyProduction);
 
-	double getHeatEnergyProduction();
+	const double getHeatEnergyProduction() const;
 
-	void setSize(
-		double size);
+	void setHeatLossFactor(const double &heatLossFactor);
 
-	double getSize();
+	const double &getHeatLossFactor() const;
 
-	void setRed(
-		int red);
+	void setSize(const double &size);
 
-	double getRed();
+	const double &getSize() const;
 
-	void setGreen(
-		int green);
+	void setRed(const int &red);
 
-	double getGreen();
+	const double &getRed() const;
 
-	void setBlue(
-		int blue);
+	void setGreen(const int &green);
 
-	double getBlue();
+	const double &getGreen() const;
 
-	void setAlpha(
-		int transparency);
+	void setBlue(const int &blue);
 
-	double getAlpha();
+	const double &getBlue() const;
 
-	double &getFitness();
+	void setAlpha(const int &transparency);
 
-	void setFitness(double &fitness);
+	const double &getAlpha() const;
 
-	void addFitness(double &fitness);
+	const double &getFitness() const;
+
+	void setFitness(const double &fitness);
+
+	void addFitness(const double &fitness);
+
+	void setDied(const bool dead);
+
+	bool getDied();
 
 	NeuralNetwork &getNeuralNetwork();
 
@@ -102,20 +103,24 @@ public:
 	static unsigned seed;
 	static mt19937 mersenne_generator;
 
+	//Brain...kind of
+	NeuralNetwork _neuralNetwork;
+
 private:
 
 	//Organism Properties
 	//X-Y Position
 	double _positionX;
 	double _positionY;
-	double _size = 1.0;
 
-	int _red = randomInt(0,255);
-	int _green = randomInt(0, 255);
-	int _blue = randomInt(0, 255);
-	int _alpha = randomInt(128, 255);
+	int _red;
+	int _green;
+	int _blue;
+	int _alpha;
 
 	double _fitness = 0.0;
+
+	double _size = SIZE_ORGANISM;
 
 	//Body funtionalities
 	double _energyHeatProduction = ENERGY_HEAT_PRODUCTION;
@@ -125,8 +130,7 @@ private:
 	//Condition
 	double _energy = STARTING_ENERGY;
 	double _temperature = STARTING_TEMPERATURE;
+	bool _dead = false;
 
-	//Brain...kind of
-	NeuralNetwork _neuralNetwork;
 };
 

@@ -1,11 +1,9 @@
 #include "GraphicHandler.h"
 
-#include <iostream>
 #include <math.h>
 #include <iterator>
 
-GraphicHandler::GraphicHandler(
-	Simulation &simulation)
+GraphicHandler::GraphicHandler(Simulation &simulation)
 {
 	//Set the simulation pointer for the graphic handler
 	_simulation = &simulation;
@@ -167,7 +165,8 @@ void GraphicHandler::printEntities()
 		else
 		{
 			//resizes proportional to the size of the organism
-			tmpShape.setRadius(100.0 / _zPosition * it->getSize());
+			tmpShape.setRadius(100.0f / _zPosition * it->getSize());
+			
 			sf::Color color(it->getRed(), it->getGreen(), it->getBlue(), it->getAlpha());
 			tmpShape.setFillColor(color);
 			//calculates the xPosition for the entity on the screen
@@ -227,43 +226,61 @@ void GraphicHandler::printInformation()
 	//Shape for the organism
 	sf::CircleShape tmpShape(100.0 / _zPosition * 1.0);
 
-	if (_nearestOrganism != NULL)
+	if (INFORMATION_ORGANISM != NULL)
 	{
 		//resizes proportional to the size of the organism
-		tmpShape.setRadius(10.0 * _nearestOrganism->getSize());
+		tmpShape.setRadius(10.0 * INFORMATION_ORGANISM->getSize());
 		tmpShape.setPosition(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0);
-		sf::Color color(_nearestOrganism->getRed(), _nearestOrganism->getGreen(), _nearestOrganism->getBlue(), _nearestOrganism->getAlpha());
+		sf::Color color(INFORMATION_ORGANISM->getRed(), INFORMATION_ORGANISM->getGreen(), INFORMATION_ORGANISM->getBlue(), INFORMATION_ORGANISM->getAlpha());
 		tmpShape.setFillColor(color);
 		_gameWindow.draw(tmpShape);
 
 		//Add the different information lines for the entity
 		string = "Highest Fitness so far: " + to_string(_simulation->getHighestFitness());
 		text.setString(string);
-		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 2.0 * 10.0 * _nearestOrganism->getSize());
+		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 2.0 * 10.0 * INFORMATION_ORGANISM->getSize());
 		text.setPosition(pos);
 		_gameWindow.draw(text);
 
-		string = "Organism on PositionX: " + to_string(_nearestOrganism->getPositionX()) + "\tY: " + to_string(_nearestOrganism->getPositionY());
+		string = "Organism on PositionX: " + to_string(INFORMATION_ORGANISM->getPositionX()) + "\tY: " + to_string(INFORMATION_ORGANISM->getPositionY());
 		text.setString(string);
-		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + text.getCharacterSize() + 2.0 * 10.0 * _nearestOrganism->getSize());
+		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + text.getCharacterSize() + 2.0 * 10.0 * INFORMATION_ORGANISM->getSize());
 		text.setPosition(pos);
 		_gameWindow.draw(text);
 
-		string = "Energy: " + to_string(_nearestOrganism->getEnergy());
+		string = "Energy: " + to_string(INFORMATION_ORGANISM->getEnergy());
 		text.setString(string);
-		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 2.0 *text.getCharacterSize() + 2.0 * 10.0 * _nearestOrganism->getSize());
+		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 2.0 *text.getCharacterSize() + 2.0 * 10.0 * INFORMATION_ORGANISM->getSize());
 		text.setPosition(pos);
 		_gameWindow.draw(text);
 
-		string = "Temperature: " + to_string(_nearestOrganism->getTemperature());
+		string = "Temperature: " + to_string(INFORMATION_ORGANISM->getTemperature());
 		text.setString(string);
-		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 3.0 * text.getCharacterSize() + 2.0 * 10.0 * _nearestOrganism->getSize());
+		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 3.0 * text.getCharacterSize() + 2.0 * 10.0 * INFORMATION_ORGANISM->getSize());
 		text.setPosition(pos);
 		_gameWindow.draw(text);
 
-		string = "Fitness: " + to_string(_nearestOrganism->getFitness());
+		string = "HeatLossFactor: " + to_string(INFORMATION_ORGANISM->getHeatLossFactor());
 		text.setString(string);
-		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 4.0 * text.getCharacterSize() + 2.0 * 10.0 * _nearestOrganism->getSize());
+		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 4.0 * text.getCharacterSize() + 2.0 * 10.0 * INFORMATION_ORGANISM->getSize());
+		text.setPosition(pos);
+		_gameWindow.draw(text);
+
+		string = "Fitness: " + to_string(INFORMATION_ORGANISM->getFitness());
+		text.setString(string);
+		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 5.0 * text.getCharacterSize() + 2.0 * 10.0 * INFORMATION_ORGANISM->getSize());
+		text.setPosition(pos);
+		_gameWindow.draw(text);
+
+		string = "Size: " + to_string(INFORMATION_ORGANISM->getSize());
+		text.setString(string);
+		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 6.0 * text.getCharacterSize() + 2.0 * 10.0 * INFORMATION_ORGANISM->getSize());
+		text.setPosition(pos);
+		_gameWindow.draw(text);
+
+		string = "Number organisms: " + to_string(_simulation->getOrganisms().size());
+		text.setString(string);
+		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 7.0 * text.getCharacterSize() + 2.0 * 10.0 * INFORMATION_ORGANISM->getSize());
 		text.setPosition(pos);
 		_gameWindow.draw(text);
 
@@ -440,11 +457,27 @@ void GraphicHandler::getEvents()
 						nearstOrganism = &(*it);
 					}
 				}
-				_nearestOrganism = nearstOrganism;
+				INFORMATION_ORGANISM = nearstOrganism;
 			}
 			else
 			{
-				_nearestOrganism = NULL;
+				INFORMATION_ORGANISM = NULL;
+			}
+		}
+
+		if (event.type == sf::Event::KeyPressed)
+		{
+			if (event.key.code == sf::Keyboard::G)
+			{
+				TIME_LAPSE = !TIME_LAPSE;
+			}
+		}
+
+		if (event.type == sf::Event::KeyPressed)
+		{
+			if (event.key.code == sf::Keyboard::H)
+			{
+				GRAPHICS_ON = !GRAPHICS_ON;
 			}
 		}
 	}
@@ -462,7 +495,7 @@ int GraphicHandler::getMousePositionX()
 	{
 		returnValue = 0;
 	}
-	if (xPosition + (int)(intervall * ((float)_mousePositionX / (float)WINDOW_WIDTH)) > SIMULATION_X)
+	if (xPosition + (int)(intervall * ((float)_mousePositionX / (float)WINDOW_WIDTH)) >= SIMULATION_X)
 	{
 		returnValue = SIMULATION_X - 1;
 	}
@@ -481,7 +514,7 @@ int GraphicHandler::getMousePositionY()
 	{
 		returnValue = 0;
 	}
-	if (yPosition + (int)(intervall * ((float)_mousePositionY / (float)WINDOW_HEIGHT)) > SIMULATION_Y)
+	if (yPosition + (int)(intervall * ((float)_mousePositionY / (float)WINDOW_HEIGHT)) >= SIMULATION_Y)
 	{
 		returnValue = SIMULATION_Y - 1;
 	}

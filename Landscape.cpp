@@ -51,10 +51,12 @@ Landscape::Landscape()
 			if (_tiles[y][x].getHeight() > _heightMax * WATER_LEVEL)
 			{
 				_tiles[y][x].setTemperature(slope * fabs(_tiles[y][x].getHeight() - optimumHeight) + OPT_TEMPERATURE + noise * (OPT_TEMPERATURE - LOW_TEMPERATURE) / TEMPERATURE_FLUCTUATION_FACTOR);
+				_tiles[y][x].setOrignTemperature(slope * fabs(_tiles[y][x].getHeight() - optimumHeight) + OPT_TEMPERATURE + noise * (OPT_TEMPERATURE - LOW_TEMPERATURE) / TEMPERATURE_FLUCTUATION_FACTOR);
 			}
 			else
 			{
 				_tiles[y][x].setTemperature(noise * 3.0 + 3.0);
+				_tiles[y][x].setOrignTemperature(noise * 3.0 + 3.0);
 			}
 			
 		}
@@ -140,17 +142,13 @@ vector<double> Landscape::getHeightMaxMin()
 
 
 //Random engine call
-double Landscape::randomReal(
-	const double lowerBoundary,
-	const double upperBoundary)
+double Landscape::randomReal(const double lowerBoundary, const double upperBoundary)
 {
 	uniform_real_distribution<double> distribution_real(lowerBoundary, upperBoundary);
 	return distribution_real(mersenne_generator);
 }
 
-int Landscape::randomInt(
-	const int lowerBoundary,
-	const int upperBoundary)
+int Landscape::randomInt(const int lowerBoundary, const int upperBoundary)
 {
 	uniform_int_distribution<int> distribution_int(lowerBoundary, upperBoundary);
 	return distribution_int(mersenne_generator);
