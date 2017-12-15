@@ -6,18 +6,18 @@ Tile::Tile()
 {
 }
 
-
 Tile::~Tile()
 {
 }
 
+//----------------------------------------------------------------------
 
+//Getters/Setters
 //Sets the height of the tile
 void Tile::setHeight(double height)
 {
 	_height = height;
 }
-
 
 //Returns the height of the tile by index
 double &Tile::getHeight()
@@ -25,22 +25,19 @@ double &Tile::getHeight()
 	return _height;
 }
 
+//----------------------------------------------------------------------
 
 //Sets the temperature of the tile
-void Tile::setTemperature(
-	double temperature)
+void Tile::setTemperature(double temperature)
 {
 	_temperature = temperature;
 }
 
-
 //Adds the float value to the temperature of the tile
-void Tile::addTemperature(
-	double Temperature)
+void Tile::addTemperature(double Temperature)
 {
 	_temperature += Temperature;
 }
-
 
 //Returns the temperature of the tile
 double &Tile::getTemperature()
@@ -48,22 +45,22 @@ double &Tile::getTemperature()
 	return _temperature;
 }
 
-
-void Tile::setOrignTemperature(
-	double Temperature)
+//Sets the Original temperature of the Tile
+void Tile::setOrignTemperature(double Temperature)
 {
 	_originalTemperature = Temperature;
 }
 
+//Gets the original temperature of the Tile
 double &Tile::getOrignTemperature()
 {
 	return _originalTemperature;
 }
 
+//----------------------------------------------------------------------
 
 //Sets the food value for this tile
-void Tile::setFood(
-	double food)
+void Tile::setFood(double food)
 {
 	_food = food;
 	if (_food < 0.0)
@@ -72,10 +69,8 @@ void Tile::setFood(
 	}
 }
 
-
 //Adds a food value to this tile
-void Tile::addFood(
-	double food)
+void Tile::addFood(double food)
 {
 	_food += food;
 	if (_food < 0.0)
@@ -83,7 +78,6 @@ void Tile::addFood(
 		_food = 0.0;
 	}
 }
-
 
 //Returns the food value of this tile
 double &Tile::getFood()

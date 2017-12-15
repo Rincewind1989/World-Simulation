@@ -26,11 +26,11 @@ NeuralNetwork::NeuralNetwork()
 	}
 }
 
-
 NeuralNetwork::~NeuralNetwork()
 {
 }
 
+//----------------------------------------------------------------------
 
 //Getters/Setters
 const vector<double> &NeuralNetwork::getOutputs() const
@@ -38,19 +38,19 @@ const vector<double> &NeuralNetwork::getOutputs() const
 	return _outputs;
 }
 
+//----------------------------------------------------------------------
 
-//Getters/Setters
 const vector<double> &NeuralNetwork::getWeights() const
 {
 	return _weights;
 }
-
 
 void NeuralNetwork::setWeights(const vector<double> &weights)
 {
 	_weights = weights;
 }
 
+//----------------------------------------------------------------------
 
 //Adds random mutations to the weights
 void NeuralNetwork::processMutations()
@@ -59,11 +59,16 @@ void NeuralNetwork::processMutations()
 	{
 		if (randomReal(0, 1.0) < CHANCE_MUTATE)
 		{
-			_weights[i] = _weights[i] * MUTATION_PERTUBATE_PROCENT + randomReal(-1.0, 1.0)*MUTATION_PERTUBATE_ADD;
+			_weights[i] += _weights[i] * randomReal(-MUTATION_PERTUBATE_PROCENT, MUTATION_PERTUBATE_PROCENT);
+		}
+		if (randomReal(0, 1.0) < CHANCE_MUTATE)
+		{
+			_weights[i] = randomReal(-5.0, 5.0);
 		}
 	}
 }
 
+//----------------------------------------------------------------------
 
 //Feeds the momentarily saved input forward through the network
 void NeuralNetwork::feedForward(const vector<double> &inputs)
@@ -94,6 +99,7 @@ void NeuralNetwork::feedForward(const vector<double> &inputs)
 	_outputs = layerOutput;
 }
 
+//----------------------------------------------------------------------
 
 //Sigmoid function is the activation function
 const double NeuralNetwork::sigmoid(const double &sum)
@@ -101,6 +107,7 @@ const double NeuralNetwork::sigmoid(const double &sum)
 	return (SIGMOID_STRETCHY_FACTOR * ((1.0 / (1.0 + exp(SIGMOID_STRETCHX_FACTOR * sum))) - 0.5));
 }
 
+//----------------------------------------------------------------------
 
 //Random engine call
 double NeuralNetwork::randomReal(const double lowerBoundary, const double upperBoundary)

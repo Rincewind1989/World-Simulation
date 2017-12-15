@@ -2,6 +2,9 @@
 
 #include <math.h>
 #include <iterator>
+#include <iostream>
+
+#define LEN(arr) ((int) (sizeof (arr) / sizeof (arr)[0]))
 
 GraphicHandler::GraphicHandler(Simulation &simulation)
 {
@@ -52,13 +55,53 @@ GraphicHandler::GraphicHandler(Simulation &simulation)
 	}
 	_font = font;
 
-}
+	//Calculates the vertecies for the neural network lines ones
+	_lines = new sf::Vertex*[INPUT_NEURONS * HIDDEN_NEURONS + (NUM_LAYERS - 3) * HIDDEN_NEURONS * HIDDEN_NEURONS + HIDDEN_NEURONS * OUTPUT_NEURONS];
+	for (int i = 0; i < INPUT_NEURONS * HIDDEN_NEURONS + (NUM_LAYERS - 3) * HIDDEN_NEURONS * HIDDEN_NEURONS + HIDDEN_NEURONS * OUTPUT_NEURONS; i++)
+		_lines[i] = new sf::Vertex[2];
 
+	for (int i = 0; i < INPUT_NEURONS; i++)
+	{
+		for (int j = 0; j < HIDDEN_NEURONS; j++)
+		{
+			_lines[i + j * INPUT_NEURONS][0] = sf::Vertex(sf::Vector2f(WINDOW_WIDTH + RADIUS_NEURON * 2 + i * DISTANCE_INPUT_NEURON_FACTOR * RADIUS_NEURON + RADIUS_NEURON,
+				WINDOW_INFORMATION_HEIGHT + RADIUS_NEURON));
+			_lines[i + j * INPUT_NEURONS][1] = sf::Vertex(sf::Vector2f(WINDOW_WIDTH + RADIUS_NEURON * 2 + j * DISTANCE_HIDDEN_NEURON_FACTOR * RADIUS_NEURON + RADIUS_NEURON,
+				WINDOW_INFORMATION_HEIGHT + DISTANCE_Y_NEURON_FACTOR * RADIUS_NEURON + RADIUS_NEURON));
+		}
+	}
+
+	for (int numLayer = 0; numLayer < NUM_LAYERS - 3; numLayer++)
+	{
+		for (int i = 0; i < HIDDEN_NEURONS; i++)
+		{
+			for (int j = 0; j < HIDDEN_NEURONS; j++)
+			{
+				_lines[INPUT_NEURONS * HIDDEN_NEURONS + i + j * HIDDEN_NEURONS][0] = sf::Vertex(sf::Vector2f(WINDOW_WIDTH + RADIUS_NEURON * 2 + i * DISTANCE_HIDDEN_NEURON_FACTOR * RADIUS_NEURON + RADIUS_NEURON,
+					WINDOW_INFORMATION_HEIGHT + numLayer * DISTANCE_Y_NEURON_FACTOR * RADIUS_NEURON + RADIUS_NEURON));
+				_lines[INPUT_NEURONS * HIDDEN_NEURONS + i + j * HIDDEN_NEURONS][1] = sf::Vertex(sf::Vector2f(WINDOW_WIDTH + RADIUS_NEURON * 2 + j * DISTANCE_HIDDEN_NEURON_FACTOR * RADIUS_NEURON + RADIUS_NEURON,
+					WINDOW_INFORMATION_HEIGHT + (numLayer + 1) * DISTANCE_Y_NEURON_FACTOR * RADIUS_NEURON + RADIUS_NEURON));
+			}
+		}
+	}
+
+	for (int i = 0; i < HIDDEN_NEURONS; i++)
+	{
+		for (int j = 0; j < OUTPUT_NEURONS; j++)
+		{
+			_lines[INPUT_NEURONS * HIDDEN_NEURONS + (NUM_LAYERS - 3) * HIDDEN_NEURONS + i + j * HIDDEN_NEURONS][0] = sf::Vertex(sf::Vector2f(WINDOW_WIDTH + RADIUS_NEURON * 2 + i * DISTANCE_HIDDEN_NEURON_FACTOR * RADIUS_NEURON + RADIUS_NEURON, 
+				WINDOW_INFORMATION_HEIGHT + (NUM_LAYERS - 2) * DISTANCE_Y_NEURON_FACTOR * RADIUS_NEURON + RADIUS_NEURON));
+			_lines[INPUT_NEURONS * HIDDEN_NEURONS + (NUM_LAYERS - 3) * HIDDEN_NEURONS + i + j * HIDDEN_NEURONS][1] = sf::Vertex(sf::Vector2f(WINDOW_WIDTH + RADIUS_NEURON * 2 + j * DISTANCE_OUTPUT_NEURON_FACTOR * RADIUS_NEURON + RADIUS_NEURON,
+				WINDOW_INFORMATION_HEIGHT + (NUM_LAYERS - 1) * DISTANCE_Y_NEURON_FACTOR * RADIUS_NEURON + RADIUS_NEURON));
+		}
+	}
+}
 
 GraphicHandler::~GraphicHandler()
 {
 }
 
+//----------------------------------------------------------------------
 
 //Prints the game entites to the window
 void GraphicHandler::printWorld()
@@ -137,6 +180,7 @@ void GraphicHandler::printWorld()
 	}
 }
 
+//----------------------------------------------------------------------
 
 //Prints the entities of the game
 void GraphicHandler::printEntities()
@@ -154,6 +198,7 @@ void GraphicHandler::printEntities()
 	//loops through all organism and checks if they are visible
 	for (vector<Organism>::iterator it = (*organisms).begin(); it != (*organisms).end(); ++it)
 	{
+		tmpShape.setOutlineThickness(0.0);
 		if (it->getPositionX() < (_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X 
 			|| it->getPositionX() > (_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X + (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X 
 			|| it->getPositionY() < (_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_Y
@@ -166,8 +211,20 @@ void GraphicHandler::printEntities()
 		{
 			//resizes proportional to the size of the organism
 			tmpShape.setRadius(100.0f / _zPosition * it->getSize());
-			
 			sf::Color color(it->getRed(), it->getGreen(), it->getBlue(), it->getAlpha());
+			if (it->getWasHit())
+			{
+				color.r = 255;
+				color.g = 0;
+				color.b = 0;
+				color.a = 255;
+			}	
+			if (&(*it) == &(*_simulation->getInformationOrganism()))
+			{
+				sf::Color outlineColor(0, 0, 0);
+				tmpShape.setOutlineColor(outlineColor);
+				tmpShape.setOutlineThickness(2.0);
+			}
 			tmpShape.setFillColor(color);
 			//calculates the xPosition for the entity on the screen
 			xPosition = (int)((_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - _zPosition / (2.0 * 100.0) * (float)SIMULATION_X);
@@ -180,146 +237,148 @@ void GraphicHandler::printEntities()
 	}
 }
 
+//----------------------------------------------------------------------
 
 //Print information window
 void GraphicHandler::printInformation()
+{
+	//Textarray to be printed
+	string informationText[] = { "Position X: " + to_string(_tilePositionX) + "\tPosition Y: " + to_string(_tilePositionY) ,
+		"Height: " + to_string(_tileP->getHeight()) ,
+		"Temperature: " + to_string(_tileP->getTemperature()),
+		"Food: " + to_string(_tileP->getFood()),
+		"Number organisms: " + to_string(_simulation->getOrganisms().size()),
+		"Highest Fitness so far: " + to_string(_simulation->getHighestFitness()),
+		"Avg. Fitness: " + to_string(_simulation->getAvgFitness()),
+	};
+
+	//Draw the selected tile in the information window	
+	_gameWindow.draw(_tileSprite);
+
+	//Add the different information lines for the tile
+	for (int i = 0; i < sizeof(informationText) / sizeof(informationText[0]); i++)
+	{
+		printText(informationText[i], WINDOW_WIDTH, i * INFORMATION_TEXT_SIZE + INFORMATION_WINDOW_SPRITE_SIZE * _tileSprite.getTextureRect().height);
+	}
+
+	//Shape for the organism
+	sf::CircleShape tmpShape(100.0 / _zPosition * 1.0);
+
+	if (_simulation->getInformationOrganism() != NULL)
+	{
+		//Textarray to be printed
+		string informationText2[] = { "Organism on PositionX: " + to_string(_simulation->getInformationOrganism()->getPositionX()) + "\tY: " + to_string(_simulation->getInformationOrganism()->getPositionY()),
+			"Energy: " + to_string(_simulation->getInformationOrganism()->getEnergy()),
+			"Temperature: " + to_string(_simulation->getInformationOrganism()->getTemperature()),
+			"HeatLoss: " + to_string(_simulation->getInformationOrganism()->getHeatLossFactor() * _simulation->getInformationOrganism()->getHeatLossViaNeuralNetwork()),
+			"Energy-Heat-Production: " + to_string(_simulation->getInformationOrganism()->getHeatEnergyProduction()),
+			"Fitness: " + to_string(_simulation->getInformationOrganism()->getFitness()),
+			"Size: " + to_string(_simulation->getInformationOrganism()->getSize())
+		};
+
+		//resizes proportional to the size of the organism
+		tmpShape.setRadius(10.0 * _simulation->getInformationOrganism()->getSize());
+		tmpShape.setPosition(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0);
+		sf::Color color(_simulation->getInformationOrganism()->getRed(), _simulation->getInformationOrganism()->getGreen(), _simulation->getInformationOrganism()->getBlue(), _simulation->getInformationOrganism()->getAlpha());
+		tmpShape.setFillColor(color);
+		_gameWindow.draw(tmpShape);
+
+		//Add the different information lines for the entity
+		for (int i = 0; i < sizeof(informationText2) / sizeof(informationText2[0]); i++)
+		{
+			printText(informationText2[i], WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + i * INFORMATION_TEXT_SIZE + 2.0 * 10.0 * _simulation->getInformationOrganism()->getSize());
+		}
+
+		//Print the neural network of this organism
+		printNeuralNetwork();
+	}
+}
+
+//----------------------------------------------------------------------
+
+//Prints a text at a certain location in the information window
+void GraphicHandler::printText(string text, double x, double y)
 {
 	//Define importan variables
 	sf::Vector2f pos;
 	string string;
 
 	// left mouse button is pressed: get information from the tile the mouse is hovering above
-	sf::Text text;
-	text.setFont(_font);
-	text.setCharacterSize(16);
-	text.setFillColor(sf::Color::Black);
-	text.setOutlineColor(sf::Color::Black);
+	sf::Text textObj;
+	textObj.setFont(_font);
+	textObj.setCharacterSize(INFORMATION_TEXT_SIZE);
+	textObj.setFillColor(sf::Color::Black);
+	textObj.setOutlineColor(sf::Color::Black);
 
-	//Draw the selected tile in the information window	
-	_gameWindow.draw(_tileSprite);
+	//Draw the text at a position
+	textObj.setString(text);
+	pos = sf::Vector2f(x, y);
+	textObj.setPosition(pos);
+	_gameWindow.draw(textObj);
+}
 
-	//Add the different information lines for the tile
-	string = "Position X: " + to_string(_tilePositionX) + "\tPosition Y: " + to_string(_tilePositionY);
-	text.setString(string);
-	pos = sf::Vector2f(WINDOW_WIDTH, INFORMATION_WINDOW_SPRITE_SIZE * _tileSprite.getTextureRect().height);
-	text.setPosition(pos);
-	_gameWindow.draw(text);
+//----------------------------------------------------------------------
 
-	string = "Height: " + to_string(_tileP->getHeight());
-	text.setString(string);
-	pos = sf::Vector2f(WINDOW_WIDTH, text.getCharacterSize() + INFORMATION_WINDOW_SPRITE_SIZE * _grassSprite.getTextureRect().height);
-	text.setPosition(pos);
-	_gameWindow.draw(text);
+//Print neural network
+void GraphicHandler::printNeuralNetwork()
+{
+	//Draw the neural network
+	//Draw the input nodes
+	printLayer(INPUT_NEURONS, DISTANCE_INPUT_NEURON_FACTOR, WINDOW_INFORMATION_HEIGHT);
 
-	string = "Temperature: " + to_string(_tileP->getTemperature());
-	text.setString(string);
-	pos = sf::Vector2f(WINDOW_WIDTH, 2.0 * text.getCharacterSize() + INFORMATION_WINDOW_SPRITE_SIZE * _grassSprite.getTextureRect().height);
-	text.setPosition(pos);
-	_gameWindow.draw(text);
-
-	string = "Food: " + to_string(_tileP->getFood());
-	text.setString(string);
-	pos = sf::Vector2f(WINDOW_WIDTH, 3.0 * text.getCharacterSize() + INFORMATION_WINDOW_SPRITE_SIZE * _grassSprite.getTextureRect().height);
-	text.setPosition(pos);
-	_gameWindow.draw(text);
-
-	//Shape for the organism
-	sf::CircleShape tmpShape(100.0 / _zPosition * 1.0);
-
-	if (INFORMATION_ORGANISM != NULL)
+	//Draw the hidden nodes	
+	for (int hiddenLayers = 0; hiddenLayers < NUM_LAYERS - 2; hiddenLayers++)
 	{
-		//resizes proportional to the size of the organism
-		tmpShape.setRadius(10.0 * INFORMATION_ORGANISM->getSize());
-		tmpShape.setPosition(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0);
-		sf::Color color(INFORMATION_ORGANISM->getRed(), INFORMATION_ORGANISM->getGreen(), INFORMATION_ORGANISM->getBlue(), INFORMATION_ORGANISM->getAlpha());
+		printLayer(HIDDEN_NEURONS, DISTANCE_HIDDEN_NEURON_FACTOR, WINDOW_INFORMATION_HEIGHT + (hiddenLayers + 1) * DISTANCE_Y_NEURON_FACTOR * RADIUS_NEURON);
+	}
+
+	//Draw the output nodes
+	printLayer(OUTPUT_NEURONS, DISTANCE_OUTPUT_NEURON_FACTOR, WINDOW_INFORMATION_HEIGHT + (NUM_LAYERS - 1) * DISTANCE_Y_NEURON_FACTOR * RADIUS_NEURON);
+
+	//Draw the edges
+	printEdges();
+}
+
+//----------------------------------------------------------------------
+
+//Prints a layer of the neural network
+void GraphicHandler::printLayer(int numNodes, double x, double y)
+{
+	//Shape for the organism
+	sf::CircleShape tmpShape(RADIUS_NEURON);
+
+	for (int i = 0; i < numNodes; i++)
+	{
+		tmpShape.setPosition(WINDOW_WIDTH + RADIUS_NEURON * 2 + i * x * RADIUS_NEURON, y);
+		sf::Color color(0, 0, 0, 255);
 		tmpShape.setFillColor(color);
 		_gameWindow.draw(tmpShape);
-
-		//Add the different information lines for the entity
-		string = "Highest Fitness so far: " + to_string(_simulation->getHighestFitness());
-		text.setString(string);
-		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 2.0 * 10.0 * INFORMATION_ORGANISM->getSize());
-		text.setPosition(pos);
-		_gameWindow.draw(text);
-
-		string = "Organism on PositionX: " + to_string(INFORMATION_ORGANISM->getPositionX()) + "\tY: " + to_string(INFORMATION_ORGANISM->getPositionY());
-		text.setString(string);
-		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + text.getCharacterSize() + 2.0 * 10.0 * INFORMATION_ORGANISM->getSize());
-		text.setPosition(pos);
-		_gameWindow.draw(text);
-
-		string = "Energy: " + to_string(INFORMATION_ORGANISM->getEnergy());
-		text.setString(string);
-		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 2.0 *text.getCharacterSize() + 2.0 * 10.0 * INFORMATION_ORGANISM->getSize());
-		text.setPosition(pos);
-		_gameWindow.draw(text);
-
-		string = "Temperature: " + to_string(INFORMATION_ORGANISM->getTemperature());
-		text.setString(string);
-		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 3.0 * text.getCharacterSize() + 2.0 * 10.0 * INFORMATION_ORGANISM->getSize());
-		text.setPosition(pos);
-		_gameWindow.draw(text);
-
-		string = "HeatLossFactor: " + to_string(INFORMATION_ORGANISM->getHeatLossFactor());
-		text.setString(string);
-		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 4.0 * text.getCharacterSize() + 2.0 * 10.0 * INFORMATION_ORGANISM->getSize());
-		text.setPosition(pos);
-		_gameWindow.draw(text);
-
-		string = "Fitness: " + to_string(INFORMATION_ORGANISM->getFitness());
-		text.setString(string);
-		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 5.0 * text.getCharacterSize() + 2.0 * 10.0 * INFORMATION_ORGANISM->getSize());
-		text.setPosition(pos);
-		_gameWindow.draw(text);
-
-		string = "Size: " + to_string(INFORMATION_ORGANISM->getSize());
-		text.setString(string);
-		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 6.0 * text.getCharacterSize() + 2.0 * 10.0 * INFORMATION_ORGANISM->getSize());
-		text.setPosition(pos);
-		_gameWindow.draw(text);
-
-		string = "Number organisms: " + to_string(_simulation->getOrganisms().size());
-		text.setString(string);
-		pos = sf::Vector2f(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 2.0 + 7.0 * text.getCharacterSize() + 2.0 * 10.0 * INFORMATION_ORGANISM->getSize());
-		text.setPosition(pos);
-		_gameWindow.draw(text);
-
-		//Draw the neural network
-		//Draw the input nodes
-		for (int i = 0; i < INPUT_NEURONS; i++)
-		{
-			tmpShape.setRadius(RADIUS_NEURON);
-			tmpShape.setPosition(WINDOW_WIDTH + WINDOW_INFORMATION_WIDTH / 20.0, WINDOW_INFORMATION_HEIGHT + i*2.5*RADIUS_NEURON);
-			sf::Color color(0,0,0,255);
-			tmpShape.setFillColor(color);
-			_gameWindow.draw(tmpShape);
-		}
-
-		//Draw the hidden nodes
-		for (int hiddenLayers = 0; hiddenLayers < NUM_LAYERS - 2; hiddenLayers++)
-		{
-			for (int i = 0; i < HIDDEN_NEURONS; i++)
-			{
-				tmpShape.setRadius(RADIUS_NEURON);
-				tmpShape.setPosition(WINDOW_WIDTH + WINDOW_INFORMATION_WIDTH / 20.0 + (hiddenLayers + 1) * 5.0 * RADIUS_NEURON, WINDOW_INFORMATION_HEIGHT + i*2.5*RADIUS_NEURON);
-				sf::Color color(0, 0, 0, 255);
-				tmpShape.setFillColor(color);
-				_gameWindow.draw(tmpShape);
-			}
-		}		
-
-		//Draw the output nodes
-		for (int i = 0; i < OUTPUT_NEURONS; i++)
-		{
-			tmpShape.setRadius(RADIUS_NEURON);
-			tmpShape.setPosition(WINDOW_WIDTH + WINDOW_INFORMATION_WIDTH / 20.0 + 10.0 * RADIUS_NEURON, WINDOW_INFORMATION_HEIGHT + i*2.5*RADIUS_NEURON);
-			sf::Color color(0, 0, 0, 255);
-			tmpShape.setFillColor(color);
-			_gameWindow.draw(tmpShape);
-		}
 	}
 }
 
+//----------------------------------------------------------------------
+
+//Prints the edges between two layers
+void GraphicHandler::printEdges()
+{	
+	//for (int i = 0; i < _simulation->getInformationOrganism()->getNeuralNetwork().getWeights().size(); i++)
+	for (int i = 0; i < INPUT_NEURONS * HIDDEN_NEURONS + (NUM_LAYERS - 3) * HIDDEN_NEURONS * HIDDEN_NEURONS + HIDDEN_NEURONS * OUTPUT_NEURONS; i++)
+	{	
+		if (_simulation->getInformationOrganism()->getNeuralNetwork().getWeights()[i] < 0.0)
+		{
+			_lines[i][0].color = sf::Color::Red;
+			_lines[i][1].color = sf::Color::Red;
+		}
+		else
+		{
+			_lines[i][0].color = sf::Color::Black;
+			_lines[i][1].color = sf::Color::Black;
+		}
+		_gameWindow.draw(_lines[i], 2, sf::Lines);
+	}
+}
+
+//----------------------------------------------------------------------
 
 //Clear the display
 void GraphicHandler::clear()
@@ -327,6 +386,7 @@ void GraphicHandler::clear()
 	_gameWindow.clear(_color);
 }
 
+//----------------------------------------------------------------------
 
 //Draws the display
 void GraphicHandler::display()
@@ -334,6 +394,7 @@ void GraphicHandler::display()
 	_gameWindow.display();
 }
 
+//----------------------------------------------------------------------
 
 //Grabs the events on both windows
 void GraphicHandler::getEvents()
@@ -457,11 +518,11 @@ void GraphicHandler::getEvents()
 						nearstOrganism = &(*it);
 					}
 				}
-				INFORMATION_ORGANISM = nearstOrganism;
+				_simulation->setInformationOrganism(nearstOrganism);
 			}
 			else
 			{
-				INFORMATION_ORGANISM = NULL;
+				_simulation->setInformationOrganism(NULL);
 			}
 		}
 
@@ -469,7 +530,11 @@ void GraphicHandler::getEvents()
 		{
 			if (event.key.code == sf::Keyboard::G)
 			{
-				TIME_LAPSE = !TIME_LAPSE;
+				TIME_LAPSE += 1;
+				if (TIME_LAPSE == 3)
+				{
+					TIME_LAPSE = 0;
+				}
 			}
 		}
 
@@ -480,9 +545,18 @@ void GraphicHandler::getEvents()
 				GRAPHICS_ON = !GRAPHICS_ON;
 			}
 		}
+
+		if (event.type == sf::Event::KeyPressed)
+		{
+			if (event.key.code == sf::Keyboard::J)
+			{
+				SHOW_FPS = !SHOW_FPS;
+			}
+		}
 	}
 }
 
+//----------------------------------------------------------------------
 
 //Returns the x position of the tile the mouse is hovering above
 int GraphicHandler::getMousePositionX()
@@ -501,7 +575,6 @@ int GraphicHandler::getMousePositionX()
 	}
 	return returnValue;
 }
-
 
 //Returns the y position of the tile the mouse is hovering above
 int GraphicHandler::getMousePositionY()

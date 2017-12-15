@@ -109,11 +109,11 @@ Landscape::Landscape()
 	}
 }
 
-
 Landscape::~Landscape()
 {
 }
 
+//----------------------------------------------------------------------
 
 //Returns the vector of vector of tiles of this landscape
 vector<vector<Tile>> &Landscape::getTiles()
@@ -121,15 +121,15 @@ vector<vector<Tile>> &Landscape::getTiles()
 	return _tiles;
 }
 
+//----------------------------------------------------------------------
 
 //Returns a tile of the landscape by its index
-Tile &Landscape::getTilesByIndex(
-	int x, 
-	int y)
+Tile &Landscape::getTilesByIndex(int x, int y)
 {
 	return _tiles[y][x];
 }
 
+//----------------------------------------------------------------------
 
 //Returns the maximum and minimum height value for this simulation
 vector<double> Landscape::getHeightMaxMin()
@@ -140,6 +140,7 @@ vector<double> Landscape::getHeightMaxMin()
 	return tmp;
 }
 
+//----------------------------------------------------------------------
 
 //Random engine call
 double Landscape::randomReal(const double lowerBoundary, const double upperBoundary)
@@ -147,7 +148,6 @@ double Landscape::randomReal(const double lowerBoundary, const double upperBound
 	uniform_real_distribution<double> distribution_real(lowerBoundary, upperBoundary);
 	return distribution_real(mersenne_generator);
 }
-
 int Landscape::randomInt(const int lowerBoundary, const int upperBoundary)
 {
 	uniform_int_distribution<int> distribution_int(lowerBoundary, upperBoundary);

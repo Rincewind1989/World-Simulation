@@ -21,16 +21,17 @@ int main()
 		//Update Simulation
 		simulation.deltaTime();
 		simulation.updateSimulation();
+		//----------------------------------------------------------------------
 
 		//Update Graphics
+		graphicHandler.clear();
 		if (GRAPHICS_ON)
 		{
-			graphicHandler.clear();
 			graphicHandler.printWorld();
 			graphicHandler.printEntities();
-			graphicHandler.printInformation();
-			graphicHandler.display();
 		}
+		graphicHandler.printInformation();
+		graphicHandler.display();
 		graphicHandler.getEvents();
 	}
 

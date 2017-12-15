@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 using namespace std;
 
 class Tile
@@ -9,32 +7,19 @@ class Tile
 public:
 	Tile();
 	~Tile();
-
+	//----------------------------------------------------------------------
 	//Setters/Getters
-	void setHeight(
-		double height);
-
+	void setHeight(double height);
 	double &getHeight();
-
-	void setTemperature(
-		double temperature);
-
-	void addTemperature(
-		double Temperature);
-
+	//----------------------------------------------------------------------
+	void setTemperature(double temperature);
+	void addTemperature(double Temperature);
 	double &getTemperature();
-
-	void setOrignTemperature(
-		double Temperature);
-
+	void setOrignTemperature(double Temperature);
 	double &getOrignTemperature();
-
-	void setFood(
-		double food);
-
-	void addFood(
-		double food);
-
+	//----------------------------------------------------------------------
+	void setFood(double food);
+	void addFood(double food);
 	double &getFood();
 
 private:
