@@ -8,6 +8,10 @@ Landscape::Landscape()
 	//Creating the random generator for seeding the perlin noise
 	random_device seed_generator;
 	unsigned seed = seed_generator();
+	if (RANDOM_SEED != 0)
+	{
+		seed = RANDOM_SEED;
+	}
 	mt19937 mersenne_generator(seed);
 	uniform_int_distribution<int> distribution_int(0, 10000000);
 	seed = distribution_int(mersenne_generator);
@@ -64,6 +68,10 @@ Landscape::Landscape()
 
 	//Reseed the perlin noise for the food map
 	perlin.reseed(distribution_int(mersenne_generator));
+	if (RANDOM_SEED != 0)
+	{
+		perlin.reseed(2*RANDOM_SEED);
+	}
 
 	//Depending on the height and the temperature food is generated on every tile
 	double food;

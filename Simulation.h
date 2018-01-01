@@ -26,14 +26,18 @@ public:
 	vector<double> getInputs(Organism &organism);
 	//----------------------------------------------------------------------
 	void deltaTime();
+	//Check if delta time is greater than slowmotion time
+	bool timelapseCheck();
 	//----------------------------------------------------------------------
 	//Updates the whole simulatipn
 	void updateSimulation();
 	//----------------------------------------------------------------------
 	//Updates all dynamics by time
 	void updateWorld();
-	//Update all food on every tile
-	void updateFood();
+	//Update all food on every tile as a ODE
+	void updateFoodAsODE();
+	//Update all food discrete randomly distributed on the tiles
+	void updateFoodDiscrete();
 	//Update the temperature on every tile
 	void updateTemperature();
 	//----------------------------------------------------------------------
@@ -92,6 +96,7 @@ private:
 	Organism* _informationOrganism = NULL;
 	sf::Clock _clock;
 	double _deltaTime;
+	double _accDeltaFrame;
 	double _accDeltaTime;
 	double _highestFitness = 0.0;
 };

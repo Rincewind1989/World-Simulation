@@ -62,22 +62,34 @@ Organism Organism::asexualBreeding()
 		child._positionY = 0;
 	}
 
-	double newRed = _red + mutateStat(_red) + randomReal(-25.0, 15.0);
+	double newRed = _red + mutateStat(_red);
+	{
+		newRed += randomInt(-4, 5);
+	}
 	if (newRed < 0) { newRed = 0; }
 	if (newRed > 255) { newRed = 255; }
 	child.setRed(newRed);
 
-	double newGreen = _green + mutateStat(_green) + randomReal(-25.0, 15.0);
+	double newGreen = _green + mutateStat(_green);
+	{
+		newGreen += randomInt(-4, 5);
+	}
 	if (newGreen < 0) { newGreen = 0; }
 	if (newGreen > 255) { newGreen = 255; }
 	child.setGreen(newGreen);
 
-	double newBlue = _blue + mutateStat(_blue) + randomReal(-25.0, 15.0);
+	double newBlue = _blue + mutateStat(_blue);
+	{
+		newBlue += randomInt(-4, 5);
+	}
 	if (newBlue < 0) { newBlue = 0; }
 	if (newBlue > 255) { newBlue = 255; }
 	child.setBlue(newBlue);
 
-	double newAlpha = _alpha + mutateStat(_alpha) + randomReal(-25.0, 15.0);
+	double newAlpha = _alpha + mutateStat(_alpha);
+	{
+		newAlpha += randomInt(-4, 5);
+	}
 	if (newAlpha < 128) { newAlpha = 128; }
 	if (newAlpha > 255) { newAlpha = 255; }
 	child.setAlpha(newAlpha);
@@ -87,7 +99,8 @@ Organism Organism::asexualBreeding()
 	child.setSize(newSize);
 
 	double newEHP = _energyHeatProduction + mutateStat(_energyHeatProduction);
-	if (newEHP < 0.0) { newEHP = 0.0; }
+	if (newEHP < LOWEST_ENERGY_HEAT_PRODUCTION) { newEHP = LOWEST_ENERGY_HEAT_PRODUCTION; }
+	if (newEHP < HIGHEST_ENERGY_HEAT_PRODUCTION) { newEHP = HIGHEST_ENERGY_HEAT_PRODUCTION; }
 	_energyHeatProduction = newEHP;
 	child.setHeatEnergyProduction(newEHP);
 
@@ -132,25 +145,37 @@ Organism::Organism(const Organism &father, const Organism &mother)
 		if (newY > SIMULATION_Y) { newY = SIMULATION_Y; }
 		_positionY = newY;
 
-		mutateAdd = mutateStat(father.getRed()) + randomReal(-25.0, 15.0);
+		mutateAdd = mutateStat(father.getRed());
+		{
+			mutateAdd += randomInt(-4, 5);
+		}
 		double newRed = father.getRed() + mutateAdd;
 		if (newRed < 0) { newRed = 0; }
 		if (newRed > 255) { newRed = 255; }
 		_red = newRed;
 
-		mutateAdd = mutateStat(father.getGreen()) + randomReal(-25.0, 15.0);
+		mutateAdd = mutateStat(father.getGreen());
+		{
+			mutateAdd += randomInt(-4, 5);
+		}
 		double newGreen = father.getGreen() + mutateAdd;
 		if (newGreen < 0) { newGreen = 0; }
 		if (newGreen > 255) { newGreen = 255; }
 		_green = newGreen;
 
-		mutateAdd = mutateStat(father.getBlue()) + randomReal(-25.0, 15.0);
+		mutateAdd = mutateStat(father.getBlue());
+		{
+			mutateAdd += randomInt(-4, 5);
+		}
 		double newBlue = father.getBlue() + mutateAdd;
 		if (newBlue < 0) { newBlue = 0; }
 		if (newBlue > 255) { newBlue = 255; }
 		_blue = newBlue;
 
-		mutateAdd = mutateStat(father.getAlpha()) + randomReal(-25.0, 15.0);
+		mutateAdd = mutateStat(father.getAlpha());
+		{
+			mutateAdd += randomInt(-4, 5);
+		}
 		double newAlpha = father.getAlpha() + mutateAdd;
 		if (newAlpha < ALPHA_MIN) { newAlpha = ALPHA_MIN; }
 		if (newAlpha > 255) { newAlpha = 255; }
@@ -162,7 +187,8 @@ Organism::Organism(const Organism &father, const Organism &mother)
 		_size = newSize;
 
 		double newEHP = father.getHeatEnergyProduction() + mutateStat(father.getHeatEnergyProduction());
-		if (newEHP < 0.0) { newEHP = 0.0; }
+		if (newEHP < LOWEST_ENERGY_HEAT_PRODUCTION) { newEHP = LOWEST_ENERGY_HEAT_PRODUCTION; }
+		if (newEHP < HIGHEST_ENERGY_HEAT_PRODUCTION) { newEHP = HIGHEST_ENERGY_HEAT_PRODUCTION; }
 		_energyHeatProduction = newEHP;
 
 		double newHL = father.getHeatLossFactor() + mutateStat(father.getHeatLossFactor());
@@ -197,25 +223,41 @@ Organism::Organism(const Organism &father, const Organism &mother)
 		if (newY > SIMULATION_Y) { newY = SIMULATION_Y; }
 		_positionY = newY;
 
-		mutateAdd = mutateStat(father.getRed()) + randomReal(-25.0, 15.0);
+		mutateAdd = mutateStat(father.getRed());
+		if (randomReal(0.0, 1.0) < MUTATE_STAT)
+		{
+			mutateAdd += randomInt(-4, 5);
+		}
 		double newRed = father.getRed() + mutateAdd;
+		{
+			mutateAdd += randomInt(-4, 5);
+		}
 		if (newRed < 0) { newRed = 0; }
 		if (newRed > 255) { newRed = 255; }
 		_red = newRed;
 
-		mutateAdd = mutateStat(father.getGreen()) + randomReal(-25.0, 15.0);
+		mutateAdd = mutateStat(father.getGreen());
 		double newGreen = father.getGreen() + mutateAdd;
+		{
+			mutateAdd += randomInt(-4, 5);
+		}
 		if (newGreen < 0) { newGreen = 0; }
 		if (newGreen > 255) { newGreen = 255; }
 		_green = newGreen;
 
-		mutateAdd = mutateStat(father.getBlue()) + randomReal(-25.0, 15.0);
+		mutateAdd = mutateStat(father.getBlue());
 		double newBlue = father.getBlue() + mutateAdd;
+		{
+			mutateAdd += randomInt(-4, 5);
+		}
 		if (newBlue < 0) { newBlue = 0; }
 		if (newBlue > 255) { newBlue = 255; }
 		_blue = newBlue;
 
-		mutateAdd = mutateStat(father.getAlpha()) + randomReal(-25.0, 15.0);
+		mutateAdd = mutateStat(father.getAlpha());
+		{
+			mutateAdd += randomInt(-4, 5);
+		}
 		double newAlpha = father.getAlpha() + mutateAdd;
 		if (newAlpha < ALPHA_MIN) { newAlpha = ALPHA_MIN; }
 		if (newAlpha > 255) { newAlpha = 255; }
@@ -227,7 +269,8 @@ Organism::Organism(const Organism &father, const Organism &mother)
 		_size = newSize;
 
 		double newEHP = mother.getHeatEnergyProduction() + mutateStat(mother.getHeatEnergyProduction());
-		if (newEHP < 0.0) { newEHP = 0.0; }
+		if (newEHP < LOWEST_ENERGY_HEAT_PRODUCTION) { newEHP = LOWEST_ENERGY_HEAT_PRODUCTION; }
+		if (newEHP < HIGHEST_ENERGY_HEAT_PRODUCTION) { newEHP = HIGHEST_ENERGY_HEAT_PRODUCTION; }
 		_energyHeatProduction = newEHP;
 
 		double newHL = mother.getHeatLossFactor() + mutateStat(mother.getHeatLossFactor());

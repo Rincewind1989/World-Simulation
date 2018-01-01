@@ -531,7 +531,7 @@ void GraphicHandler::getEvents()
 			if (event.key.code == sf::Keyboard::G)
 			{
 				TIME_LAPSE += 1;
-				if (TIME_LAPSE == 3)
+				if (TIME_LAPSE == 4)
 				{
 					TIME_LAPSE = 0;
 				}
@@ -543,14 +543,6 @@ void GraphicHandler::getEvents()
 			if (event.key.code == sf::Keyboard::H)
 			{
 				GRAPHICS_ON = !GRAPHICS_ON;
-			}
-		}
-
-		if (event.type == sf::Event::KeyPressed)
-		{
-			if (event.key.code == sf::Keyboard::J)
-			{
-				SHOW_FPS = !SHOW_FPS;
 			}
 		}
 	}
