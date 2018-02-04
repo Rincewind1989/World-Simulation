@@ -36,7 +36,7 @@ public:
 
 private:
 	vector<int> _numNeuronsInLayer;
-	vector<double> _weights = vector<double>(INPUT_NEURONS*HIDDEN_NEURONS + (NUM_LAYERS - 3)*HIDDEN_NEURONS + HIDDEN_NEURONS*OUTPUT_NEURONS);
+	vector<double> _weights = vector<double>(INPUT_NEURONS*HIDDEN_NEURONS + (NUM_LAYERS - 3)*HIDDEN_NEURONS*HIDDEN_NEURONS + HIDDEN_NEURONS*OUTPUT_NEURONS);
 	vector<double> _outputs = vector<double>(OUTPUT_NEURONS);
 };
 

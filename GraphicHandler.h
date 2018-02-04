@@ -72,8 +72,8 @@ private:
 	//Saved objects that are printed on the information screen
 	Tile* _tileP = new Tile;
 	sf::Sprite _tileSprite;
-	double _tilePositionX;
-	double _tilePositionY;
+	int _tilePositionX;
+	int _tilePositionY;
 	double _fitness;
 	double _highestFitness;
 	//----------------------------------------------------------------------
@@ -104,6 +104,12 @@ private:
 	//----------------------------------------------------------------------
 	//Lines for neural network drawing
 	sf::Vertex** _lines;
+	//----------------------------------------------------------------------
+	//String for the information
+	string _informationString[30];
+	//----------------------------------------------------------------------
+	//Mouse position for scrolling
+	sf::Vector2i _posBefore = {0 ,0};
 
 };
 
