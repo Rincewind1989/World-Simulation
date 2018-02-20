@@ -6,7 +6,7 @@
 
 Simulation::Simulation()
 {
-	_organisms.reserve(5000);
+	_organisms.reserve(10000);
 	for (int i = 0; i < STARTING_NUMBER_ORGANISM; i++)
 	{
 		_organisms.push_back(Organism());
@@ -75,9 +75,9 @@ vector<double> Simulation::getInputs(Organism &organism)
 			}
 			else
 			{
-				inputs[index] = _landscape.getTiles()[positionY + i][positionX + j].getTemperature();
+				inputs[index] = _landscape.getTiles()[positionY + i][positionX + j].getTemperature() / OPTIM_TEMPERATURE;
 				index++;
-				inputs[index] = _landscape.getTiles()[positionY + i][positionX + j].getFood();
+				inputs[index] = _landscape.getTiles()[positionY + i][positionX + j].getFood() / MAX_FOOD_ON_TILE;
 			}
 			index++;
 			for (vector<Organism>::iterator it = _organisms.begin(); it != _organisms.end(); ++it)
@@ -93,7 +93,7 @@ vector<double> Simulation::getInputs(Organism &organism)
 
 	index++;
 
-	//Gets the 4 next entities with their position, color and size
+	//Gets the 4 next entities with their distance, color and size
 	vector<Organism*> nearestOrganisms;
 	Organism* tmpNearestOrganism;
 	double minDistance = 1000000000.0;
@@ -104,8 +104,9 @@ vector<double> Simulation::getInputs(Organism &organism)
 		tmpNearestOrganism = NULL;
 		for (vector<Organism>::iterator it = _organisms.begin(); it != _organisms.end(); ++it)
 		{	
-			distance = sqrt((it->getPositionX() - organism.getPositionX()) * (it->getPositionX() - organism.getPositionX()) + (it->getPositionY() - organism.getPositionY()) * (it->getPositionY() - organism.getPositionY()));
-			if (distance < minDistance && find(nearestOrganisms.begin(), nearestOrganisms.end(), &(*it)) != nearestOrganisms.end())
+			distance = sqrt((it->getPositionX() - organism.getPositionX()) * (it->getPositionX() - organism.getPositionX()) 
+							+ (it->getPositionY() - organism.getPositionY()) * (it->getPositionY() - organism.getPositionY()));
+			if (distance < minDistance && find(nearestOrganisms.begin(), nearestOrganisms.end(), &(*it)) != nearestOrganisms.end() && distance < RADIUS_NEXT_ENTITIES)
 			{
 				minDistance = distance;
 				tmpNearestOrganism = &(*it);
@@ -114,19 +115,19 @@ vector<double> Simulation::getInputs(Organism &organism)
 		if (tmpNearestOrganism != NULL)
 		{
 			nearestOrganisms.push_back(tmpNearestOrganism);
-			inputs[index] = tmpNearestOrganism->getPositionX() - organism.getPositionX();
+			inputs[index] = (tmpNearestOrganism->getPositionX() - organism.getPositionX()) / RADIUS_NEXT_ENTITIES;
 			index++;
-			inputs[index] = tmpNearestOrganism->getPositionY() - organism.getPositionY();
+			inputs[index] = (tmpNearestOrganism->getPositionY() - organism.getPositionY()) / RADIUS_NEXT_ENTITIES;
 			index++;
-			inputs[index] = tmpNearestOrganism->getSize();
+			inputs[index] = tmpNearestOrganism->getSize() / SIZE_ORGANISM;
 			index++;
-			inputs[index] = tmpNearestOrganism->getAlpha();
+			inputs[index] = tmpNearestOrganism->getAlpha() / 255.0;
 			index++;
-			inputs[index] = tmpNearestOrganism->getBlue();
+			inputs[index] = tmpNearestOrganism->getBlue() / 255.0;
 			index++;
-			inputs[index] = tmpNearestOrganism->getGreen();
+			inputs[index] = tmpNearestOrganism->getGreen() / 255.0;
 			index++;
-			inputs[index] = tmpNearestOrganism->getRed();
+			inputs[index] = tmpNearestOrganism->getRed() / 255.0;
 			index++;
 		}
 		else
@@ -152,19 +153,19 @@ vector<double> Simulation::getInputs(Organism &organism)
 
 	
 	//Get the body properties of the organism
-	inputs[index] = organism.getTemperature();
+	inputs[index] = organism.getTemperature() / OPTIM_TEMPERATURE;
 	index++;
-	inputs[index] = organism.getEnergy();
+	inputs[index] = organism.getEnergy() / organism.getMaxEnergy();
 	index++;
-	inputs[index] = organism.getSize();
+	inputs[index] = organism.getSize() / SIZE_ORGANISM;
 	index++;
-	inputs[index] = organism.getAlpha();
+	inputs[index] = organism.getAlpha() / 255.0;
 	index++;
-	inputs[index] = organism.getRed();
+	inputs[index] = organism.getRed() / 255.0;
 	index++;
-	inputs[index] = organism.getBlue();
+	inputs[index] = organism.getBlue() / 255.0;
 	index++;
-	inputs[index] = organism.getRed();
+	inputs[index] = organism.getRed() / 255.0;
 
 	return inputs;
 }
@@ -200,14 +201,15 @@ void Simulation::updateOrganisms()
 	{
 		//Update thinking and movement
 		updateNeuralNetworks(&(*it));
-		updateBodyFuncViaNeuralNetwork(&(*it));
+		//updateBodyFuncViaNeuralNetwork(&(*it));
 		updateMovement(&(*it));
 
 		//Update body properties
 		updateHeatEnergy(&(*it));
 		updateEnergy(&(*it));
 		updateEating(&(*it));
-		updateAttack(&(*it));	
+		updateAttack(&(*it));
+		updateAge(&(*it));
 
 		//Create organisms
 		createOrganismViaAsexuell(&(*it));
@@ -231,19 +233,19 @@ void Simulation::updateWasHit()
 }
 
 //Update the neural network of all organisms
-void Simulation::updateNeuralNetworks(Organism *organism)
+void Simulation::updateNeuralNetworks(Organism* organism)
 {
 	organism->getNeuralNetwork().feedForward(getInputs((*organism)));
 }
 
-//Update Body functions based on neural network output
+/*//Update Body functions based on neural network output
 void Simulation::updateBodyFuncViaNeuralNetwork(Organism *organism)
 {
 	updateHeatControl(&(*organism));
-}
+}*/
 
 //Updates the movement of every organism
-void Simulation::updateMovement(Organism *organism)
+void Simulation::updateMovement(Organism* organism)
 {
 	int x = 0;
 	int y = 0;
@@ -256,39 +258,29 @@ void Simulation::updateMovement(Organism *organism)
 
 	//Change x-coordinate
 	organism->setdeltaX(getTempBasedFunction(*organism) / organism->getSize() * MOVEMENT_SPEED * organism->getNeuralNetwork().getOutputs()[0]);
-	organism->addPositionX(organism->getDeltaX() * MOVEMENT_REDUCTION_IN_WATER);
+	organism->addPositionX(organism->getDeltaX() * movementFactorIfinWater);
 	if (organism->getPositionX() < 0.0)
-	{
 		organism->setPositionX(0.0);
-	}
-	if (organism->getPositionX() > SIMULATION_X)
-	{
-		organism->setPositionX(SIMULATION_X);
-	}
+	if (organism->getPositionX() > SIMULATION_X - 1)
+		organism->setPositionX(SIMULATION_X - 1);
 
 	//Change y-coordinate
 	organism->setdeltaY(getTempBasedFunction(*organism) / organism->getSize() * MOVEMENT_SPEED * organism->getNeuralNetwork().getOutputs()[1]);
 	organism->addPositionY((organism->getDeltaY() * MOVEMENT_REDUCTION_IN_WATER));
 	if (organism->getPositionY() < 0.0)
-	{
 		organism->setPositionY(0.0);
-	}
-	if (organism->getPositionY() > SIMULATION_Y)
-	{
-		organism->setPositionY(SIMULATION_Y);
-	}
+	if (organism->getPositionY() > SIMULATION_Y - 1)
+		organism->setPositionY(SIMULATION_Y - 1);
 }
 
 
 //Checks every Organism if it died
-bool Simulation::checkForDeath(Organism *organism)
+bool Simulation::checkForDeath(Organism* organism)
 {
 	if (organism->getDied())
 	{
 		if (&(*organism) == &(*_informationOrganism))
-		{
 			_informationOrganism = NULL;
-		}
 
 		if (&(*organism) == &(_organisms[_organisms.size() - 1]))
 		{
@@ -298,28 +290,24 @@ bool Simulation::checkForDeath(Organism *organism)
 
 		*organism = _organisms[_organisms.size() - 1];
 		if (&(_organisms[_organisms.size() - 1]) == &(*_informationOrganism))
-		{
 			_informationOrganism = &(*organism);
-		}
 		_organisms.pop_back();			
 	}
 	return false;
 }
 
 //Update fitness by time
-void Simulation::updateFitness(Organism *organism)
+void Simulation::updateFitness(Organism* organism)
 {
 	organism->addFitness(0.1);
 	if (organism->getFitness() > _highestFitness)
-	{
 		_highestFitness = organism->getFitness();
-	}
 }
 
 //----------------------------------------------------------------------
 
 //Create new organisms until the maximum Population is reached
-void Simulation::createOrganismViaAsexuell(Organism *organism)
+void Simulation::createOrganismViaAsexuell(Organism* organism)
 {
 	vector<Organism> newChilds;
 	vector<Organism>::iterator it = _organisms.begin();
@@ -341,9 +329,9 @@ void Simulation::createOrganismViaAsexuell(Organism *organism)
 }
 
 //Create Organisms if number of Org goes under min value of living organism
-void Simulation::createOrganismBeforeExtinction(Organism *organism)
+void Simulation::createOrganismBeforeExtinction(Organism* organism)
 {
-	while (_organisms.size() < STARTING_NUMBER_ORGANISM)
+	while (_organisms.size() < MIN_NUMBER_ORGANISM)
 	{
 		Organism org;
 		_organisms.push_back(org);
@@ -352,7 +340,7 @@ void Simulation::createOrganismBeforeExtinction(Organism *organism)
 }
 
 //Create new organisms until the maximum Population is reached
-void Simulation::createOrganismViaFitness(Organism *organism)
+void Simulation::createOrganismViaFitness(Organism* organism)
 {
 
 	if (_accDeltaFrame >= TIME_FOR_FITNESS_REPRODUCTION)
@@ -431,6 +419,76 @@ double Simulation::getAvgFitness()
 }
 
 //----------------------------------------------------------------------
+//Get Average size
+double Simulation::getAvgSize()
+{
+	double sum = 0.0;
+	vector<Organism>::iterator it = _organisms.begin();
+	while (it != _organisms.end() && _organisms.size() > 0)
+	{
+		sum += it->getSize();
+		++it;
+	}
+	return sum / _organisms.size();
+}
+
+//Get Smallest Size
+double Simulation::getSmallSize()
+{
+	double size = 100000000.0;
+	vector<Organism>::iterator it = _organisms.begin();
+	while (it != _organisms.end() && _organisms.size() > 0)
+	{
+		if (it->getSize() < size)
+			size = it->getSize();
+		++it;
+	}
+	return size;
+}
+
+//Get biggest Size
+double Simulation::getBiggestSize()
+{
+	double size = 0.0;
+	vector<Organism>::iterator it = _organisms.begin();
+	while (it != _organisms.end() && _organisms.size() > 0)
+	{
+		if (it->getSize() > size)
+			size = it->getSize();
+		++it;
+	}
+	return size;
+}
+
+//----------------------------------------------------------------------
+//Get Average size
+double Simulation::getAvgAge()
+{
+	double sum = 0.0;
+	vector<Organism>::iterator it = _organisms.begin();
+	while (it != _organisms.end() && _organisms.size() > 0)
+	{
+		sum += it->getAge();
+		++it;
+	}
+	return sum / _organisms.size();
+}
+
+//Get biggest Size
+double Simulation::getHighestAge()
+{
+	double age = 0.0;
+	vector<Organism>::iterator it = _organisms.begin();
+	while (it != _organisms.end() && _organisms.size() > 0)
+	{
+		if (it->getAge() > age)
+			age = it->getAge();
+		++it;
+	}
+	return age;
+}
+
+//----------------------------------------------------------------------
 
 //Updates the time elapsed since last update
 void Simulation::deltaTime()
@@ -443,9 +501,9 @@ void Simulation::deltaTime()
 //Check if delta time is greater than slowmotion time
 bool Simulation::timelapseCheck()
 {
-	if (_accDeltaTime >= 1.0 / (TIME_LAPSE + 1))
+	if (_accDeltaTime >= 1.0 / ((TIME_LAPSE + 1) * 5))
 	{
-		_accDeltaTime -= 1.0 / (TIME_LAPSE + 1);
+		_accDeltaTime -= 1.0 / ((TIME_LAPSE + 1) * 5);
 		return true;
 	}
 	return false;
@@ -468,21 +526,13 @@ void Simulation::getTileXYViaOrganism(int &x, int &y, const Organism *organism)
 	x = (int)organism->getPositionX();
 	y = (int)organism->getPositionY();
 	if (x < 0)
-	{
 		x = 0;
-	}
 	if (x > SIMULATION_X - 1)
-	{
 		x = SIMULATION_X - 1;
-	}
 	if (y < 0)
-	{
 		y = 0;
-	}
 	if (y > SIMULATION_Y - 1)
-	{
 		y = SIMULATION_Y - 1;
-	}
 }
 
 //Random engine call

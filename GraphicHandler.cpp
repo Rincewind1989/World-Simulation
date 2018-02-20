@@ -5,6 +5,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <string>
 
 #define LEN(arr) ((int) (sizeof (arr) / sizeof (arr)[0]))
 
@@ -139,64 +140,70 @@ void GraphicHandler::printWorld()
 	int xPosition = 0;
 	int yPosition = 0;
 
-	//Sets the loop intervall for x and y based on the z-axes and the position of the camera
+	//Sets the loop intervall for x and y based on the distance and the position of the camera
 	int y;
 	int x;
 
+	int yPositionBool = (int)((_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - _zPosition / (2.0 * 100) * (float)SIMULATION_Y);
+	int xPositionBool = (int)((_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - _zPosition / (2.0 * 100) * (float)SIMULATION_X);
+
+	int yPositionLoop = ((int)((_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y + _zPosition / (2.0 * 100) * (float)SIMULATION_Y));
+	int xPositionLoop = ((int)((_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X + (_zPosition / (2.0 * 100)) * (float)SIMULATION_X));
+
 	//This if clause calculates the loop interval for y (which tiles are visible with the momentarily camera settings)
-	if ((int)((_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - _zPosition / (2.0 * 100.0) * (float)SIMULATION_Y) < 0)
+	if (yPositionBool < 0)
 	{
 		y = 0;
-		yPosition = abs((int)((_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - _zPosition / (2.0 * 100.0) * (float)SIMULATION_Y));
+		yPosition = abs(yPositionBool);
 	}
 	else
 	{
-		y = (int)((_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - _zPosition / (2.0 * 100.0) * (float)SIMULATION_Y);
+		y = yPositionBool;
 		yPosition = 0;
 	}
 
 	//Loop for the y-tile-axis
-	for (y; y < ((int)((_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y + _zPosition / (2.0 * 100.0) * (float)SIMULATION_Y)) && y < SIMULATION_Y; y++)
+	for (y; y < yPositionLoop  && y < SIMULATION_Y; y++)
 	{
 
 		//This if clause calculates the loop interval for x (which tiles are visible with the momentarily camera settings)
-		if ((int)((_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - _zPosition / (2.0 * 100.0) * (float)SIMULATION_X) < 0)
+		if (xPositionBool < 0)
 		{
 			x = 0;
-			xPosition = abs((int)((_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X));
+			xPosition = abs(xPositionBool);
 		}
 		else
 		{
 			xPosition = 0;
-			x = (int)((_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X);
+			x = xPositionBool;
 		}
 
 		//Loop for the x-tile-axis
-		for (x; x < ((int)((_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X + (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X)) && x < SIMULATION_X; x++)
+		for (x; x < xPositionLoop && x < SIMULATION_X; x++)
 		{
 			if ((*tiles)[y][x].getHeight() <= _heightMax * WATER_LEVEL)
 			{
 				_waterSprite.setPosition(xPosition * _WidnowWidth / _Simulationx * 100 / _zPosition, yPosition * _WindowHeight / _Simulationy * 100 / _zPosition);
-				_waterSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs((*tiles)[y][x].getHeight()) / HEIGHT_MULITPLICATOR)) * 255));
+				_waterSprite.setColor(sf::Color(255, 255, 255, 80 + (*tiles)[y][x].getFood() / MAX_FOOD_ON_TILE * 175)); //(sqrt(fabs((*tiles)[y][x].getHeight()) / HEIGHT_MULITPLICATOR)) * 255)
 				_gameWindow.draw(_waterSprite);
 			}
 			if ((*tiles)[y][x].getHeight() > _heightMax * WATER_LEVEL && (*tiles)[y][x].getHeight() < _heightMax * GRASS_LEVEL)
 			{
 				_grassSprite.setPosition(xPosition * _WidnowWidth / _Simulationx * 100 / _zPosition, yPosition * _WindowHeight / _Simulationy * 100 / _zPosition);
-				_grassSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs((*tiles)[y][x].getHeight()) / HEIGHT_MULITPLICATOR) ) * 255));
+				_grassSprite.setColor(sf::Color(255, 255, 255, 80 + (*tiles)[y][x].getFood() / MAX_FOOD_ON_TILE * 175)); //(sqrt(fabs((*tiles)[y][x].getHeight()) / HEIGHT_MULITPLICATOR) ) * 255)
 				_gameWindow.draw(_grassSprite);
 			}
 
 			if ((*tiles)[y][x].getHeight() > _heightMax * GRASS_LEVEL && (*tiles)[y][x].getHeight() < _heightMax * STONE_LEVEL)
 			{
 				_stoneSprite.setPosition(xPosition * _WidnowWidth / _Simulationx * 100 / _zPosition, yPosition * _WindowHeight / _Simulationy * 100 / _zPosition);
-				_stoneSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs((*tiles)[y][x].getHeight()) / HEIGHT_MULITPLICATOR)) * 255));
+				_stoneSprite.setColor(sf::Color(255, 255, 255, 80 + (*tiles)[y][x].getFood() / MAX_FOOD_ON_TILE * 175)); // (sqrt(fabs((*tiles)[y][x].getHeight()) / HEIGHT_MULITPLICATOR)) * 255)
 				_gameWindow.draw(_stoneSprite);
 			}
 			if ((*tiles)[y][x].getHeight() > _heightMax * STONE_LEVEL)
 			{
 				_snowSprite.setPosition(xPosition * _WidnowWidth / _Simulationx * 100 / _zPosition, yPosition * _WindowHeight / _Simulationy * 100 / _zPosition);
-				_snowSprite.setColor(sf::Color(255, 255, 255, (sqrt(fabs((*tiles)[y][x].getHeight()) / HEIGHT_MULITPLICATOR)) * 255));
+				_snowSprite.setColor(sf::Color(255, 255, 255, 80 + (*tiles)[y][x].getFood() / MAX_FOOD_ON_TILE * 175)); // (sqrt(fabs((*tiles)[y][x].getHeight()) / HEIGHT_MULITPLICATOR)) * 255)
 				_gameWindow.draw(_snowSprite);
 			}
 			xPosition++;
@@ -218,16 +225,16 @@ void GraphicHandler::printEntities()
 	int yPosition = 0;
 
 	//Shape for the organism
-	sf::CircleShape tmpShape(100.0 / _zPosition * 1.0);
+	sf::CircleShape tmpShape(100 / _zPosition * 1.0);
 
 	//loops through all organism and checks if they are visible
 	for (vector<Organism>::iterator it = (*organisms).begin(); it != (*organisms).end(); ++it)
 	{
 		tmpShape.setOutlineThickness(0.0);
-		if (it->getPositionX() < (_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X 
-			|| it->getPositionX() > (_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X + (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_X 
-			|| it->getPositionY() < (_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_Y
-			|| it->getPositionY() > (_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y + (_zPosition / (2.0 * 100.0)) * (float)SIMULATION_Y)
+		if (it->getPositionX() < (_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - (_zPosition / (2.0 * 100)) * (float)SIMULATION_X
+			|| it->getPositionX() > (_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X + (_zPosition / (2.0 * 100)) * (float)SIMULATION_X
+			|| it->getPositionY() < (_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - (_zPosition / (2.0 * 100)) * (float)SIMULATION_Y
+			|| it->getPositionY() > (_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y + (_zPosition / (2.0 * 100)) * (float)SIMULATION_Y)
 		{
 			continue;
 		}
@@ -235,7 +242,7 @@ void GraphicHandler::printEntities()
 		else
 		{
 			//resizes proportional to the size of the organism
-			tmpShape.setRadius(100.0f / _zPosition * it->getSize());
+			tmpShape.setRadius(100.0 / _zPosition * WINDOW_WIDTH / SIMULATION_X / 2.0 * it->getSize());
 			sf::Color color(it->getRed(), it->getGreen(), it->getBlue(), it->getAlpha());
 			if (it->getWasHit())
 			{
@@ -252,9 +259,9 @@ void GraphicHandler::printEntities()
 			}
 			tmpShape.setFillColor(color);
 			//calculates the xPosition for the entity on the screen
-			xPosition = (int)((_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - _zPosition / (2.0 * 100.0) * (float)SIMULATION_X);
+			xPosition = (int)((_xPosition / (float)WINDOW_WIDTH) * (float)SIMULATION_X - _zPosition / (2.0 * 100) * (float)SIMULATION_X);
 			//calculates the yPosition for the entity on the screen
-			yPosition = (int)((_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - _zPosition / (2.0 * 100.0) * (float)SIMULATION_Y);				
+			yPosition = (int)((_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - _zPosition / (2.0 * 100) * (float)SIMULATION_Y);
 			tmpShape.setPosition((it->getPositionX() - xPosition) * _WidnowWidth / _Simulationx * 100 / _zPosition, (it->getPositionY() - yPosition) * _WindowHeight / _Simulationy * 100 / _zPosition);
 
 			_gameWindow.draw(tmpShape);
@@ -327,6 +334,16 @@ void GraphicHandler::printInformation()
 	str << setprecision(3) << float(DEATH_BY_AGE) / float(DEATHS) * 100;
 	_informationString[11] = str.str();
 
+	str.str("");
+	str.clear();
+	str << setprecision(3) << _simulation->getAvgAge();
+	_informationString[22] = str.str();
+
+	str.str("");
+	str.clear();
+	str << setprecision(3) << _simulation->getHighestAge();
+	_informationString[23] = str.str();
+
 	string informationText[] = { "Position X: " + to_string(_tilePositionX) + "\tPosition Y: " + to_string(_tilePositionY) ,
 		"Height: " + _informationString[0],
 		"Temperature: " + _informationString[1],
@@ -335,10 +352,11 @@ void GraphicHandler::printInformation()
 		"Highest Fitness so far: " + _informationString[4],
 		"Avg. Fitness: " + _informationString[5],
 		"Avg. Size/Smallest Size/Biggest Size: " + _informationString[6] + "/" + _informationString[7] + "/" + _informationString[8],
+		"Avg. Age/Highest Age: " + _informationString[22] + "/" + _informationString[23],
 		"Death by Temperature in %: " + _informationString[9],
 		"Death by Energy loss in %: " + _informationString[10],
 		"Death by Age in %: " + _informationString[11],
-		"World-Seed: " + to_string(SEED),
+		"World-Seed: " + to_string(SEED)
 	};
 
 	//Draw the selected tile in the information window	
@@ -563,7 +581,7 @@ void GraphicHandler::getEvents()
 		//Mouse wheel event regulates the distance to the map
 		if (event.type == sf::Event::MouseWheelMoved)
 		{
-			_zPosition -= event.mouseWheel.delta;
+			_zPosition -= event.mouseWheel.delta * 3.0;
 			if (_zPosition > CAMERA_Z_DISTANCE)
 			{
 				_zPosition = CAMERA_Z_DISTANCE;
@@ -574,10 +592,10 @@ void GraphicHandler::getEvents()
 			}
 
 			//Rescales the sprites to the new distance view
-			_grassSprite.setScale(sf::Vector2f(1.0 * 100 / _zPosition / (_grassTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / _zPosition / (_grassTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
-			_waterSprite.setScale(sf::Vector2f(1.0 * 100 / _zPosition / (_waterTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / _zPosition / (_waterTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
-			_stoneSprite.setScale(sf::Vector2f(1.0 * 100 / _zPosition / (_stoneTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / _zPosition / (_stoneTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
-			_snowSprite.setScale(sf::Vector2f(1.0 * 100 / _zPosition / (_snowTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 1.0 * 100 / _zPosition / (_snowTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
+			_grassSprite.setScale(sf::Vector2f(100.0 / _zPosition / (_grassTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 100.0 / _zPosition / (_grassTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
+			_waterSprite.setScale(sf::Vector2f(100.0 / _zPosition / (_waterTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 100.0 / _zPosition / (_waterTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
+			_stoneSprite.setScale(sf::Vector2f(100.0 / _zPosition / (_stoneTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 100.0 / _zPosition / (_stoneTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
+			_snowSprite.setScale(sf::Vector2f(100.0 / _zPosition / (_snowTexture.getSize().x * SIMULATION_X / WINDOW_WIDTH), 100.0 / _zPosition / (_snowTexture.getSize().y * SIMULATION_Y / WINDOW_HEIGHT)));
 
 		}
 

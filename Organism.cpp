@@ -1,4 +1,5 @@
 #include "Organism.h"
+#include <iostream>
 
 Organism::Organism()
 {
@@ -43,8 +44,8 @@ Organism Organism::asexualBreeding()
 	vector<double> weights = _neuralNetwork.getWeights();
 	child.getNeuralNetwork().setWeights(weights);
 	child.getNeuralNetwork().processMutations();
-	child._positionX = _positionX + randomReal(-10.0, 10.0);
-	child._positionY = _positionY + randomReal(-10.0, 10.0);
+	child._positionX = _positionX;
+	child._positionY = _positionY;
 	if (child._positionX > SIMULATION_X)
 	{
 		child._positionX = SIMULATION_X;
@@ -135,12 +136,12 @@ Organism::Organism(const Organism &father, const Organism &mother)
 		getNeuralNetwork().setWeights(weights);
 		getNeuralNetwork().processMutations();
 
-		double newX = father.getPositionX() + randomReal(-10.0, 10.0);
+		double newX = father.getPositionX();
 		if (newX < 0) { newX = 0; }
 		if (newX > SIMULATION_X) { newX = SIMULATION_X; }
 		_positionX = newX;
 
-		double newY = father.getPositionY() + randomReal(-10.0, 10.0);
+		double newY = father.getPositionY();
 		if (newY < 0) { newY = 0; }
 		if (newY > SIMULATION_Y) { newY = SIMULATION_Y; }
 		_positionY = newY;
@@ -188,12 +189,12 @@ Organism::Organism(const Organism &father, const Organism &mother)
 
 		double newEHP = father.getHeatEnergyProduction() + mutateStat(father.getHeatEnergyProduction());
 		if (newEHP < LOWEST_ENERGY_HEAT_PRODUCTION) { newEHP = LOWEST_ENERGY_HEAT_PRODUCTION; }
-		if (newEHP < HIGHEST_ENERGY_HEAT_PRODUCTION) { newEHP = HIGHEST_ENERGY_HEAT_PRODUCTION; }
+		if (newEHP > HIGHEST_ENERGY_HEAT_PRODUCTION) { newEHP = HIGHEST_ENERGY_HEAT_PRODUCTION; }
 		_energyHeatProduction = newEHP;
 
 		double newHL = father.getHeatLossFactor() + mutateStat(father.getHeatLossFactor());
 		if (newHL < LOWEST_HEAT_LOSS_VALUE) { newEHP = LOWEST_HEAT_LOSS_VALUE; }
-		if (newHL < HIGHEST_HEAT_LOSS_VALUE) { newEHP = HIGHEST_HEAT_LOSS_VALUE; }
+		if (newHL > HIGHEST_HEAT_LOSS_VALUE) { newEHP = HIGHEST_HEAT_LOSS_VALUE; }
 		_heatLoss = newHL;
 
 	}
@@ -213,12 +214,12 @@ Organism::Organism(const Organism &father, const Organism &mother)
 		getNeuralNetwork().setWeights(weights);
 		getNeuralNetwork().processMutations();
 
-		double newX = mother.getPositionX() + randomReal(-10.0, 10.0);
+		double newX = mother.getPositionX();
 		if (newX < 0) { newX = 0; }
 		if (newX > SIMULATION_X) { newX = SIMULATION_X; }
 		_positionX = newX;
 
-		double newY = mother.getPositionY() + randomReal(-10.0, 10.0);
+		double newY = mother.getPositionY();
 		if (newY < 0) { newY = 0; }
 		if (newY > SIMULATION_Y) { newY = SIMULATION_Y; }
 		_positionY = newY;
@@ -270,12 +271,12 @@ Organism::Organism(const Organism &father, const Organism &mother)
 
 		double newEHP = mother.getHeatEnergyProduction() + mutateStat(mother.getHeatEnergyProduction());
 		if (newEHP < LOWEST_ENERGY_HEAT_PRODUCTION) { newEHP = LOWEST_ENERGY_HEAT_PRODUCTION; }
-		if (newEHP < HIGHEST_ENERGY_HEAT_PRODUCTION) { newEHP = HIGHEST_ENERGY_HEAT_PRODUCTION; }
+		if (newEHP > HIGHEST_ENERGY_HEAT_PRODUCTION) { newEHP = HIGHEST_ENERGY_HEAT_PRODUCTION; }
 		_energyHeatProduction = newEHP;
 
 		double newHL = mother.getHeatLossFactor() + mutateStat(mother.getHeatLossFactor());
 		if (newHL < LOWEST_HEAT_LOSS_VALUE) { newEHP = LOWEST_HEAT_LOSS_VALUE; }
-		if (newHL < HIGHEST_HEAT_LOSS_VALUE) { newEHP = HIGHEST_HEAT_LOSS_VALUE; }
+		if (newHL > HIGHEST_HEAT_LOSS_VALUE) { newEHP = HIGHEST_HEAT_LOSS_VALUE; }
 		_heatLoss = newHL;
 	}
 }
@@ -367,6 +368,20 @@ void Organism::addEnergy(const double &energy)
 void Organism::addEnergyViaFood(const double &food)
 {
 	_energy += _foodEnergyFactor * food;
+	if (_energy > getMaxEnergy())
+	{
+		_energy = getMaxEnergy();
+	}
+}
+
+const double Organism::getEnergyViaFoodValue(const double &food) const
+{
+	return _foodEnergyFactor * food;
+}
+
+const double Organism::getMaxEnergy() const
+{
+	return MAX_ENERGY_FACTOR * _size * _size;
 }
 
 const double &Organism::getEnergy() const
@@ -375,6 +390,24 @@ const double &Organism::getEnergy() const
 }
 
 //----------------------------------------------------------------------
+
+void Organism::setAge(const double &age)
+{
+	_age = age;
+}
+
+void Organism::addAge(const double &age)
+{
+	_age += age;
+}
+
+const double &Organism::getAge() const
+{
+	return _age;
+}
+
+//----------------------------------------------------------------------
+
 
 void Organism::setTemperature(const double &temperature)
 {

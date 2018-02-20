@@ -46,37 +46,51 @@ public:
 	//Updates washit to false in the beginning
 	void updateWasHit();
 	//Update the neural network of all organisms
-	void updateNeuralNetworks(Organism *organism);
+	void updateNeuralNetworks(Organism* organism);
 	//Update Body functions based on neural network output
-	void updateBodyFuncViaNeuralNetwork(Organism *organism);
+	//void updateBodyFuncViaNeuralNetwork(Organism *organism);
 	//Updates every organism if it attacks nearby entity
-	void updateAttack(Organism *organism);
+	void updateAttack(Organism* organism);
 	//Updates the movement of every organism
-	void updateMovement(Organism *organism);
+	void updateMovement(Organism* organism);
 	//Update eating for every organism
-	void updateEating(Organism *organism);
+	void updateEating(Organism* organism);
 	//Update the energy of all organisms
-	void updateHeatEnergy(Organism *organism);
+	void updateHeatEnergy(Organism* organism);
 	//Update the energy of all organisms based on size
-	void updateEnergy(Organism *organism);
+	void updateEnergy(Organism* organism);
+	//Updates every organism if it attacks nearby entity
+	void updateAge(Organism* organism);
 	//Update the Heat-Control of an Organism
-	void updateHeatControl(Organism *organism);
+	//void updateHeatControl(Organism *organism);
 	//Checks every Organism if it died
-	bool checkForDeath(Organism *organism);
+	bool checkForDeath(Organism* organism);
 	//Update fitness by time
-	void updateFitness(Organism *organism);
+	void updateFitness(Organism* organism);
 	//----------------------------------------------------------------------
 	//Create new organisms until the maximum Population is reached
-	void createOrganismViaAsexuell(Organism *organism);
+	void createOrganismViaAsexuell(Organism* organism);
 	//Create Organisms if number of Org goes under min value of living organism
-	void createOrganismBeforeExtinction(Organism *organism);
+	void createOrganismBeforeExtinction(Organism* organism);
 	//Create new organisms until the maximum Population is reached
-	void createOrganismViaFitness(Organism *organism);
+	void createOrganismViaFitness(Organism* organism);
 	//----------------------------------------------------------------------
 	//Gets the highest fitness
 	double getHighestFitness();
 	//Gets the average fitness of all Organisms
 	double getAvgFitness();
+	//----------------------------------------------------------------------
+	//Get Average size
+	double getAvgSize();
+	//Get Smallest Size
+	double getSmallSize();
+	//Get biggest Size
+	double getBiggestSize();
+	//----------------------------------------------------------------------
+	//Get Average size
+	double getAvgAge();
+	//Get biggest Size
+	double getHighestAge();
 	//----------------------------------------------------------------------
 	//Gets the efficiency of the body functions based on the optimum temperature
 	double getTempBasedFunction(Organism &organism);

@@ -11,19 +11,30 @@
 
 using namespace std;
 
-void readIni();
+//Reads in the given Constants from the Constants file
+void readIniConstant();
 
 int main()
 {
 	cout << "Reading Constants.ini...\n";
-	readIni();
+	readIniConstant();
 	cout << "\nCreating simulation...\n";
 	Simulation simulation;
 	cout << "\nCreating graphichandler...\n";
 	GraphicHandler graphicHandler(simulation);
 
-
+	//Open file to save values
+	ofstream saveFile;
+	if (SAVE_FITNESS || SAVE_POPULATION || SAVE_SIZE)
+	{
+		time_t t = time(0);   // get time now
+		struct tm * now = localtime(&t);
+		saveFile.open("Saves/" + to_string(SEED) + "_" + to_string(now->tm_mday) + "/" + to_string(now->tm_mon + 1) + "/" + to_string(now->tm_year + 1900) + ".txt");
+		saveFile << "Avg. Fitness" << "\t" << "Avg. Size" << "\t" << "Biggest Size" << "\t" << "Smallest Size" << "\t" << "Frame" << endl;
+	}
+		
 	cout << "\nRunning simulation...\n";
+	int frames = 0;
 	while (true)
 	{
 		//Update Graphics
@@ -48,11 +59,28 @@ int main()
 		
 		//Update Simulation
 		simulation.updateSimulation();
+
+		//Save the information
+		if (SAVE_FITNESS && frames >= NUMBER_FRAMES_TO_SAVE)
+			saveFile << simulation.getAvgFitness();
+
+		if (SAVE_SIZE && frames >= NUMBER_FRAMES_TO_SAVE)
+			saveFile << "\t" << simulation.getAvgSize() << "\t" << simulation.getBiggestSize() << "\t" << simulation.getSmallSize();
+
+		if (SAVE_POPULATION && frames >= NUMBER_FRAMES_TO_SAVE)
+			saveFile << simulation.getOrganisms().size();
+		
+		if ((SAVE_FITNESS || SAVE_SIZE || SAVE_POPULATION) && frames >= NUMBER_FRAMES_TO_SAVE)
+			saveFile << "\t" << frames << endl;
+
+		if (frames >= NUMBER_FRAMES_TO_SAVE) { frames = 0; }			
+		else { frames++; }
+		
 	}
 }
 
-//Reads in the Given Constants from the Constants file
-void readIni()
+//Reads in the given Constants from the Constants file
+void readIniConstant()
 {
 	INIReader reader("Constants.ini");
 
@@ -60,6 +88,20 @@ void readIni()
 		cout << "Can't load 'Constants.ini'\n";
 	}
 	cout << "Config loaded from 'Constants.ini'\n";
+
+	cout << "\nLoading Save Properties.\n\n";
+	cout << "Number_Frames_to_save=" << reader.GetInteger("Analytics", "Number_Frames_to_save", -1) << "\n";
+	NUMBER_FRAMES_TO_SAVE = reader.GetInteger("Analytics", "Number_Frames_to_save", -1);
+
+	cout << "saveFitness=" << reader.GetBoolean("Analytics", "saveFitness", -1) << "\n";
+	SAVE_FITNESS = reader.GetInteger("Analytics", "saveFitness", -1);
+
+	cout << "saveSize=" << reader.GetBoolean("Analytics", "saveSize", -1) << "\n";
+	SAVE_SIZE = reader.GetInteger("Analytics", "saveSize", -1);
+
+	cout << "savePopulation=" << reader.GetBoolean("Analytics", "savePopulation", -1) << "\n";
+	SAVE_POPULATION = reader.GetInteger("Analytics", "savePopulation", -1);
+
 	cout << "\nLoading World Properties.\n\n";
 	cout << "random seed=" << reader.GetInteger("World properties", "random seed", -1) << "\n";
 	RANDOM_SEED = reader.GetInteger("World properties", "random seed", -1);
@@ -94,6 +136,9 @@ void readIni()
 	cout << "Temperature_fluctuation_factor=" << reader.GetReal("World properties", "Temperature_fluctuation_factor", -1) << "\n";
 	TEMPERATURE_AIR_FLUX_FACTOR = reader.GetReal("World properties", "Temperature_fluctuation_factor", -1);
 
+	cout << "Water_temperature=" << reader.GetReal("World properties", "Temperature_of_water", -1) << "\n";
+	TEMPERATURE_WATER = reader.GetReal("World properties", "Temperature_of_water", -1);
+
 	cout << "Food_temperature_factor=" << reader.GetReal("World properties", "Food_temperature_factor", -1) << "\n";
 	FOOD_TEMPERATURE_FACTOR = reader.GetReal("World properties", "Food_temperature_factor", -1);
 
@@ -112,9 +157,6 @@ void readIni()
 	cout << "Chance_food_growth=" << reader.GetReal("World properties", "Chance_food_growth", -1) << "\n";
 	CHANCE_FOOD_GROWTH = reader.GetReal("World properties", "Chance_food_growth", -1);
 
-	cout << "Chance_big_food_growth=" << reader.GetReal("World properties", "Chance_big_food_growth", -1) << "\n";
-	CHANCE_BIG_FOOD_GROWTH = reader.GetReal("World properties", "Chance_big_food_growth", -1);
-
 	cout << "Temperature_air_flux_factor=" << reader.GetReal("World properties", "Temperature_air_flux_factor", -1) << "\n";
 	TEMPERATURE_AIR_FLUX_FACTOR = reader.GetReal("World properties", "Temperature_air_flux_factor", -1);
 
@@ -128,6 +170,12 @@ void readIni()
 
 	cout << "Starting_energy=" << reader.GetReal("Life properties", "Starting_energy", -1) << "\n";
 	STARTING_ENERGY = reader.GetReal("Life properties", "Starting_energy", -1);
+
+	cout << "Max_energy_factor=" << reader.GetReal("Life properties", "Max_energy_factor", -1) << "\n";
+	MAX_ENERGY_FACTOR = reader.GetReal("Life properties", "Max_energy_factor", -1);
+
+	cout << "Avg_age_death=" << reader.GetReal("Life properties", "Avg_age_death", -1) << "\n";
+	AVG_AGE_DEATH = reader.GetReal("Life properties", "Avg_age_death", -1);
 
 	cout << "Starting_temperature=" << reader.GetReal("Life properties", "Starting_temperature", -1) << "\n";
 	STARTING_TEMPERATURE = reader.GetReal("Life properties", "Starting_temperature", -1);

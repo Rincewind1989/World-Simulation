@@ -1,8 +1,22 @@
 #pragma once
 
+//Save values
+extern int NUMBER_FRAMES_TO_SAVE;
+extern bool SAVE_FITNESS;
+extern bool SAVE_SIZE;
+extern bool SAVE_POPULATION;
+
+//Debug variables
+extern int DEATH_BY_ENERGY;
+extern int DEATH_BY_TEMP;
+extern int DEATH_BY_AGE;
+extern int DEATHS;
+extern int SEED;
+
 //UI variables
 extern int TIME_LAPSE;
 extern bool GRAPHICS_ON;
+extern bool EXIT;
 //----------------------------------------------------------------------
 //World properties
 //Perlin Noise Properties
@@ -24,6 +38,7 @@ extern double HEIGHT_MULITPLICATOR;	//Height factor which is multiplies on the h
 extern double OPT_TEMPERATURE;			//The optimum temperature that can occur naturally
 extern double LOW_TEMPERATURE;		//The lowest temperature that can occur
 extern double TEMPERATURE_FLUCTUATION_FACTOR;	//Factor for the fluctation of the temperaturemap with perlin noise
+extern double TEMPERATURE_WATER;			//Temperature of the water
 //----------------------------------------------------------------------
 //Food distribution and growth factor
 extern double FOOD_TEMPERATURE_FACTOR;	//Multiplyfactor for the food growth depending on the temperature
@@ -62,11 +77,13 @@ extern double DISTANCE_OUTPUT_NEURON_FACTOR;
 extern int STARTING_NUMBER_ORGANISM;
 extern int MIN_NUMBER_ORGANISM;			//If number of organisms get below this value, random created organisms appear in the simulation
 extern double STARTING_ENERGY;			//Starting energy for am organism  (The maximum energy an organism can have depends on its size)
+extern double MAX_ENERGY_FACTOR;		//Maximum Energy Factor(The maximum energy an organism can have depends on its size and this factor)
+extern double AVG_AGE_DEATH;	//The age increases by 0.01 per frame
 extern double STARTING_TEMPERATURE;		//Starting temperature for a organism
 extern double ENERGY_HEAT_PRODUCTION;		//Factor in which energy is changed into temperature
 extern double LOWEST_ENERGY_HEAT_PRODUCTION;
 extern double HIGHEST_ENERGY_HEAT_PRODUCTION;
-extern double HEAT_LOSS_FACTOR;			//Loss of the body temperature towards the environment
+extern double HEAT_LOSS_FACTOR;			//Loss of the body temperature towards the environment which can be changed by evolution
 extern double LOWEST_HEAT_LOSS_VALUE;
 extern double HIGHEST_HEAT_LOSS_VALUE;
 extern double MOVEMENT_SPEED;				//Movementspeed of the organisms
@@ -114,4 +131,4 @@ extern double MUTATION_PERTUBATE_PROCENT;	//Procentage with which a muation pert
 extern double MUTATION_PERTUBATE_ADD;	//Absolute value with which a mutation pertubates a weight
 extern double SIGMOID_STRETCHX_FACTOR;	//Stretch factor for the sigmoid func on the x-axes
 extern double SIGMOID_STRETCHY_FACTOR;	//Stretch factor for the sigmoid func on the y-axes
-extern double RADIUS_NEXT_ENTITIES;	//Radius in which the next entities are recognized
+extern int RADIUS_NEXT_ENTITIES;	//Radius in which the next entities are recognized in pixels

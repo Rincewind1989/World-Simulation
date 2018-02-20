@@ -39,6 +39,12 @@ public:
 	void addEnergy(const double &energy);
 	void addEnergyViaFood(const double &food);
 	const double &getEnergy() const;
+	const double getMaxEnergy() const;
+	const double getEnergyViaFoodValue(const double &food) const;
+	//----------------------------------------------------------------------
+	void setAge(const double &age);
+	void addAge(const double &age);
+	const double &getAge() const;
 	//----------------------------------------------------------------------
 	void setTemperature(const double &temperature);
 	void addTemperature(const double &temperature);
@@ -118,6 +124,7 @@ private:
 	//----------------------------------------------------------------------!
 	//Condition
 	double _energy = STARTING_ENERGY;
+	double _age = 0.0;
 	double _temperature = STARTING_TEMPERATURE;
 	bool _dead = false;
 	bool _washit = false;

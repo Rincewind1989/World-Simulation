@@ -2,7 +2,7 @@
 #include "Simulation.h"
 #include "Organism.h"
 
-//Updates world properties
+//Updates world and organism properties with every frame
 
 //Update all food on every tile
 void Simulation::updateFoodAsODE()
@@ -12,46 +12,14 @@ void Simulation::updateFoodAsODE()
 	{
 		for (vector<Tile>::iterator it2 = it->begin(); it2 != it->end(); ++it2)
 		{
-			if (it2->getFood() >= MAX_FOOD_ON_TILE)
+
+			if (CHANCE_FOOD_GROWTH >= 1.0 || randomReal(0.0, 1.0) < CHANCE_FOOD_GROWTH)
 			{
-				foodAdd = (MAX_FOOD_ON_TILE - it2->getFood()) * FOOD_GROWTH_FACTOR;
+				foodAdd = randomReal(0.0, (MAX_FOOD_ON_TILE - it2->getFood()) * FOOD_GROWTH_FACTOR);
 				it2->addFood(foodAdd);
+				if (it2->getFood() > MAX_FOOD_ON_TILE)
+					it2->setFood(MAX_FOOD_ON_TILE);
 			}
-			else
-			{
-				if (randomReal(0.0, 1.0) < CHANCE_FOOD_GROWTH)
-				{
-					foodAdd = randomReal(0.0, (MAX_FOOD_ON_TILE - it2->getFood()) * FOOD_GROWTH_FACTOR);
-					it2->addFood(foodAdd);
-				}
-			}
-
-			//Small chance for a big food growth
-			if (randomReal(0.000, 1.000) < CHANCE_BIG_FOOD_GROWTH)
-			{
-				foodAdd = randomReal(MAX_FOOD_ON_TILE / 10.0, MAX_FOOD_ON_TILE / 5.0);
-				it2->addFood(foodAdd);
-			}
-
-		}
-	}
-}
-
-//Update all food discrete randomly distributed on the tiles
-void Simulation::updateFoodDiscrete()
-{
-	double foodAdd;
-	for (vector<vector<Tile>>::iterator it = _landscape.getTiles().begin(); it != _landscape.getTiles().end(); ++it)
-	{
-		for (vector<Tile>::iterator it2 = it->begin(); it2 != it->end(); ++it2)
-		{
-			//Chance that food appears
-			if (randomReal(0.00, 1.00) <= CHANCE_FOR_DISCRETE_FOOD_SPAWN)
-			{
-				foodAdd = randomReal(MAX_FOOD_ON_TILE / 5.0, MAX_FOOD_ON_TILE / 2.5);
-				it2->addFood(foodAdd);
-			}
-
 		}
 	}
 }
@@ -64,7 +32,7 @@ void Simulation::updateTemperature()
 	{
 		for (vector<Tile>::iterator it2 = it->begin(); it2 != it->end(); ++it2)
 		{
-			tempAdd = (it2->getOrignTemperature() - it2->getTemperature());
+			tempAdd = (it2->getOrignTemperature() - it2->getTemperature()) * 0.001;
 			it2->addTemperature(tempAdd);
 		}
 	}
@@ -75,7 +43,7 @@ void Simulation::updateTemperature()
 //Updates properties of organisms
 
 //Update the energy of all organisms based on temperature loss
-void Simulation::updateHeatEnergy(Organism *organism)
+void Simulation::updateHeatEnergy(Organism* organism)
 {
 	double deltaTemperature;
 	int x = 0;
@@ -83,7 +51,7 @@ void Simulation::updateHeatEnergy(Organism *organism)
 	getTileXYViaOrganism(x, y, &(*organism));
 
 	//Get lost temperature
-	double lostTemperature = organism->getHeatLossFactor() * organism->getHeatLossViaNeuralNetwork() * (organism->getTemperature() - _landscape.getTiles()[y][x].getTemperature());
+	double lostTemperature = organism->getHeatLossFactor() * (organism->getTemperature() - _landscape.getTiles()[y][x].getTemperature());
 
 	//Get added temperature
 	double addTemperature = organism->getHeatEnergyProduction();
@@ -94,15 +62,17 @@ void Simulation::updateHeatEnergy(Organism *organism)
 	organism->addTemperature(deltaTemperature);
 
 	//Check if organism died from temperatureloss
-	if (organism->getEnergy() <= 0.0 || organism->getTemperature() <= COLD_TEMP_DEATH || organism->getTemperature() >= HEAT_TEMP_DEATH)
+	if (organism->getTemperature() <= COLD_TEMP_DEATH || organism->getTemperature() >= HEAT_TEMP_DEATH)
 	{
+		DEATH_BY_TEMP++;
+		DEATHS++;
 		organism->setDied(true);
 	}
 	++organism;
 }
 
 //Update the energy of all organisms based on size
-void Simulation::updateEnergy(Organism *organism)
+void Simulation::updateEnergy(Organism* organism)
 {
 	double addEnergy = 0.0;
 	//Update energy and temperature
@@ -117,10 +87,8 @@ void Simulation::updateEnergy(Organism *organism)
 	double movementFactorIfinWater = 1.0;
 	getTileXYViaOrganism(x, y, &(*organism));
 	if (_landscape.getTiles()[y][x].getHeight() < WATER_LEVEL)
-	{
 		movementFactorIfinWater = MOVEMENT_ENERGY_FACTOR_IN_WATER;
-	}
-	addEnergy += -1 * MOVEMENT_ENERGY_LOST * movementFactorIfinWater * sqrt((organism->getDeltaX() * organism->getDeltaX()) + fabs(organism->getDeltaY() * organism->getDeltaY()));
+	addEnergy += -1 * MOVEMENT_ENERGY_LOST * movementFactorIfinWater * (organism->getDeltaX() * organism->getDeltaX()) + organism->getDeltaY() * organism->getDeltaY();
 
 
 	organism->addEnergy(addEnergy);
@@ -128,28 +96,30 @@ void Simulation::updateEnergy(Organism *organism)
 	//Check if organism died from energyloss
 	if (organism->getEnergy() <= 0.0)
 	{
+		DEATH_BY_ENERGY++;
+		DEATHS++;
 		organism->setDied(true);
 	}
 }
 
 //Updates every organism if it attacks nearby entity
-void Simulation::updateAttack(Organism *organism)
+void Simulation::updateAttack(Organism* organism)
 {
 	//Attack neary Entity if Neural network tells so and entity is close enough
 	Organism* closestOrganism = NULL;
 	if (organism->getNeuralNetwork().getOutputs()[4] > 0.0)
 	{
+		if (organism->getSize() * ATTACK_DAMAGE + organism->getEnergy() > organism->getMaxEnergy())
+			return;
 		double distanceClosestOrganism = 1000000000.0;
 		double distance = 0.0;
 		for (vector<Organism>::iterator it2 = _organisms.begin(); it2 != _organisms.end(); ++it2)
 		{
 			if (&(*it2) == &(*organism))
-			{
 				continue;
-			}
 
-			distance = (organism->getPositionX() - it2->getPositionX()) * (organism->getPositionX() - it2->getPositionX())
-				+ (organism->getPositionY() - it2->getPositionY()) * (organism->getPositionY() - it2->getPositionY());
+			distance = sqrt((organism->getPositionX() - it2->getPositionX()) * (organism->getPositionX() - it2->getPositionX())
+				+ (organism->getPositionY() - it2->getPositionY()) * (organism->getPositionY() - it2->getPositionY()));
 			if (distanceClosestOrganism > distance)
 			{
 				distanceClosestOrganism = distance;
@@ -157,16 +127,13 @@ void Simulation::updateAttack(Organism *organism)
 			}
 		}
 
-		if (sqrt((organism->getPositionX() - closestOrganism->getPositionX()) * (organism->getPositionX() - closestOrganism->getPositionX())
-			+ (organism->getPositionY() - closestOrganism->getPositionY()) * (organism->getPositionY() - closestOrganism->getPositionY())) < organism->getSize())
+		if (distanceClosestOrganism < organism->getSize() / 2.0)
 		{
 			closestOrganism->setWasHit(true);
 			double energy = organism->getSize() * ATTACK_DAMAGE;
 			//cout << "Organism " << &(*it) << " attacks for: " << energy << endl;
 			if (energy > closestOrganism->getEnergy())
-			{
 				energy = closestOrganism->getEnergy();
-			}
 			closestOrganism->addEnergy(-energy);
 			organism->addEnergy(energy);
 		}
@@ -179,13 +146,15 @@ void Simulation::updateAttack(Organism *organism)
 	{
 		if (closestOrganism->getEnergy() <= 0.0)
 		{
+			DEATH_BY_ENERGY++;
+			DEATHS++;
 			closestOrganism->setDied(true);
 		}
 	}
 }
 
 //Update eating for every organism
-void Simulation::updateEating(Organism *organism)
+void Simulation::updateEating(Organism* organism)
 {
 	double food = 0.0;
 	int x = 0;
@@ -193,23 +162,24 @@ void Simulation::updateEating(Organism *organism)
 	food = 0.0;
 	getTileXYViaOrganism(x, y, &(*organism));
 	if (x < 0)
-	{
 		x = 0;
-	}
 	if (x > SIMULATION_X - 1)
-	{
 		x = SIMULATION_X - 1;
-	}
 	if (y < 0)
-	{
 		y = 0;
-	}
 	if (y > SIMULATION_Y - 1)
-	{
 		y = SIMULATION_Y - 1;
+
+	double movementFactorIfinWater = 1.0;
+	getTileXYViaOrganism(x, y, &(*organism));
+	if (_landscape.getTiles()[y][x].getHeight() < WATER_LEVEL)
+	{
+		movementFactorIfinWater = MOVEMENT_ENERGY_FACTOR_IN_WATER;
 	}
 
-	food = getTempBasedFunction(*organism) * CONSUMPTION_FACTOR;
+	food = getTempBasedFunction(*organism) * CONSUMPTION_FACTOR * (1.0 - sqrt((organism->getDeltaX() * organism->getDeltaX()) + organism->getDeltaY() * organism->getDeltaY())/(getTempBasedFunction(*organism) / organism->getSize() * MOVEMENT_SPEED));
+	if ((organism->getEnergyViaFoodValue(food) + organism->getEnergy()) > organism->getMaxEnergy())
+		return;
 
 	if (_landscape.getTiles()[y][x].getFood() > food)
 	{
@@ -224,7 +194,22 @@ void Simulation::updateEating(Organism *organism)
 	organism->addEnergyViaFood(food);
 }
 
-//Update the Heat-Control of an Organism
+//Updates every organism if it attacks nearby entity
+void Simulation::updateAge(Organism* organism)
+{
+	organism->addAge(0.001);
+	if (organism->getAge() > AVG_AGE_DEATH)
+	{
+		if (randomReal(0.0, 1.0) < 0.01 * fabs(organism->getAge() - AVG_AGE_DEATH))
+		{
+			DEATH_BY_AGE++;
+			DEATHS++;
+			organism->setDied(true);
+		}
+	}
+}
+
+/*//Update the Heat-Control of an Organism
 void Simulation::updateHeatControl(Organism *organism)
 {
 	//Update heatloss factor via neural network
@@ -238,4 +223,4 @@ void Simulation::updateHeatControl(Organism *organism)
 		heatControlViaNeuralNetwork = HIGHEST_HEAT_LOSS_VALUE;
 	}
 	organism->setHeatLossViaNeuralNetwork(heatControlViaNeuralNetwork);
-}
+}*/

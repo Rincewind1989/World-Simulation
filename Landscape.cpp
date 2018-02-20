@@ -12,6 +12,7 @@ Landscape::Landscape()
 	{
 		seed = RANDOM_SEED;
 	}
+	SEED = seed;
 	mt19937 mersenne_generator(seed);
 	uniform_int_distribution<int> distribution_int(0, 10000000);
 	seed = distribution_int(mersenne_generator);
@@ -59,8 +60,8 @@ Landscape::Landscape()
 			}
 			else
 			{
-				_tiles[y][x].setTemperature(noise * 3.0 + 3.0);
-				_tiles[y][x].setOrignTemperature(noise * 3.0 + 3.0);
+				_tiles[y][x].setTemperature(noise * 3.0 + TEMPERATURE_WATER);
+				_tiles[y][x].setOrignTemperature(noise * 3.0 + TEMPERATURE_WATER);
 			}
 			
 		}
