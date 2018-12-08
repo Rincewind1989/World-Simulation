@@ -23,6 +23,7 @@ extern bool EXIT;
 extern int RANDOM_SEED;		//The random seed for the world generation. (0 means a random seed)
 extern double FREQUENCY;		//Frequency in which the perlin noise works, highest frequency results in more bumpy terrain
 extern int OCTAVES;			//Octaves are the number of reshaping, highest octaves result in a more natural terrain
+extern bool ISLAND_MODE;	//Determines if the map type is type "island"
 //----------------------------------------------------------------------
 //World size
 extern int SIMULATION_X;
@@ -84,6 +85,7 @@ extern double ENERGY_HEAT_PRODUCTION;		//Factor in which energy is changed into 
 extern double LOWEST_ENERGY_HEAT_PRODUCTION;
 extern double HIGHEST_ENERGY_HEAT_PRODUCTION;
 extern double HEAT_LOSS_FACTOR;			//Loss of the body temperature towards the environment which can be changed by evolution
+extern double HEAT_TIME_FACTOR;			//Should be set close to 0.1. This impacts the rate of change of the both heat loss and heat production. High values result in very fast temperature change of the organisms
 extern double LOWEST_HEAT_LOSS_VALUE;
 extern double HIGHEST_HEAT_LOSS_VALUE;
 extern double MOVEMENT_SPEED;				//Movementspeed of the organisms

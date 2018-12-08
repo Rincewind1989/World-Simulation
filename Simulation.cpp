@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <iostream>
-
 #include "Simulation.h"
 #include "Equations.h"
 
@@ -11,6 +10,10 @@ Simulation::Simulation()
 	{
 		_organisms.push_back(Organism());
 	}
+
+	_inputs = vector<double>(INPUT_NEURONS);
+
+	_fileSimulationData.open("./Saves/" + to_string(SEED) + "_SimulationData.txt");
 }
 
 Simulation::~Simulation()
@@ -56,35 +59,44 @@ Organism* Simulation::getInformationOrganism() const
 //Gets all the defined inputs for the organism
 vector<double> Simulation::getInputs(Organism &organism)
 {
-	vector<double> inputs = vector<double>(INPUT_NEURONS);
-
 	int positionX = (int)organism.getPositionX();
 	int positionY = (int)organism.getPositionY();
 	int index = 0;
+	int xOrientiation = 1;
+	int yOrientiation = 1;
 
-	//Get the temperature/food and number of entities on the adjacent tiles
-	for (int i = -ADJACENT_TILES_RADIUS; i < ADJACENT_TILES_RADIUS + 1; i++)
+	fill(_inputs.begin(), _inputs.end(), 0.0);
+
+	//Get the temperature/food and number of entities in the view
+	for (int i = 0; i < ADJACENT_TILES_RADIUS; i++)
 	{
-		for (int j = -ADJACENT_TILES_RADIUS; j < ADJACENT_TILES_RADIUS + 1; j++)
+		for (int j = 0; j < ADJACENT_TILES_RADIUS; j++)
 		{
-			if (positionY + i > (SIMULATION_Y - 1) || positionY + i < 0 || positionX + j > (SIMULATION_X - 1) || positionX + j < 0)
+			//Determine orientation
+			if (organism.getRotation() > 3.14159 / 2.0 && organism.getRotation() < 3.14159 * 3.0 / 2.0)
+				xOrientiation = -1;
+			if (organism.getRotation() < 3.14159)
+				yOrientiation = -1;
+
+
+			if (positionY + i*yOrientiation > (SIMULATION_Y - 1) || positionY + i*yOrientiation < 0 || positionX + j*xOrientiation > (SIMULATION_X - 1) || positionX + j*xOrientiation < 0)
 			{
-				inputs[index] = 0.0;
+				_inputs[index] = 0.0;
 				index++;
-				inputs[index] = 0.0;
+				_inputs[index] = 0.0;
 			}
 			else
 			{
-				inputs[index] = _landscape.getTiles()[positionY + i][positionX + j].getTemperature() / OPTIM_TEMPERATURE;
+				_inputs[index] = _landscape.getTiles()[positionY + i* yOrientiation][positionX + j*xOrientiation].getTemperature() / OPTIM_TEMPERATURE;
 				index++;
-				inputs[index] = _landscape.getTiles()[positionY + i][positionX + j].getFood() / MAX_FOOD_ON_TILE;
+				_inputs[index] = _landscape.getTiles()[positionY + i* yOrientiation][positionX + j*xOrientiation].getFood() / MAX_FOOD_ON_TILE;
 			}
 			index++;
 			for (vector<Organism>::iterator it = _organisms.begin(); it != _organisms.end(); ++it)
 			{
-				if ((int)it->getPositionY() == positionY + i && (int)it->getPositionX() == positionX + j)
+				if ((int)it->getPositionY() == positionY + i*yOrientiation && (int)it->getPositionX() == positionX + j*xOrientiation)
 				{
-					inputs[index] += 1.0;
+					_inputs[index] += 1.0;
 				}
 			}
 			index++;
@@ -115,37 +127,37 @@ vector<double> Simulation::getInputs(Organism &organism)
 		if (tmpNearestOrganism != NULL)
 		{
 			nearestOrganisms.push_back(tmpNearestOrganism);
-			inputs[index] = (tmpNearestOrganism->getPositionX() - organism.getPositionX()) / RADIUS_NEXT_ENTITIES;
+			_inputs[index] = (tmpNearestOrganism->getPositionX() - organism.getPositionX()) / RADIUS_NEXT_ENTITIES;
 			index++;
-			inputs[index] = (tmpNearestOrganism->getPositionY() - organism.getPositionY()) / RADIUS_NEXT_ENTITIES;
+			_inputs[index] = (tmpNearestOrganism->getPositionY() - organism.getPositionY()) / RADIUS_NEXT_ENTITIES;
 			index++;
-			inputs[index] = tmpNearestOrganism->getSize() / SIZE_ORGANISM;
+			_inputs[index] = tmpNearestOrganism->getSize() / SIZE_ORGANISM;
 			index++;
-			inputs[index] = tmpNearestOrganism->getAlpha() / 255.0;
+			_inputs[index] = tmpNearestOrganism->getAlpha() / 255.0;
 			index++;
-			inputs[index] = tmpNearestOrganism->getBlue() / 255.0;
+			_inputs[index] = tmpNearestOrganism->getBlue() / 255.0;
 			index++;
-			inputs[index] = tmpNearestOrganism->getGreen() / 255.0;
+			_inputs[index] = tmpNearestOrganism->getGreen() / 255.0;
 			index++;
-			inputs[index] = tmpNearestOrganism->getRed() / 255.0;
+			_inputs[index] = tmpNearestOrganism->getRed() / 255.0;
 			index++;
 		}
 		else
 		{
 			nearestOrganisms.push_back(tmpNearestOrganism);
-			inputs[index] = 0.0;
+			_inputs[index] = 0.0;
 			index++;
-			inputs[index] = 0.0;
+			_inputs[index] = 0.0;
 			index++;
-			inputs[index] = 0.0;
+			_inputs[index] = 0.0;
 			index++;
-			inputs[index] = 0.0;
+			_inputs[index] = 0.0;
 			index++;
-			inputs[index] = 0.0;
+			_inputs[index] = 0.0;
 			index++;
-			inputs[index] = 0.0;
+			_inputs[index] = 0.0;
 			index++;
-			inputs[index] = 0.0;
+			_inputs[index] = 0.0;
 			index++;
 		}
 
@@ -153,21 +165,21 @@ vector<double> Simulation::getInputs(Organism &organism)
 
 	
 	//Get the body properties of the organism
-	inputs[index] = organism.getTemperature() / OPTIM_TEMPERATURE;
+	_inputs[index] = organism.getTemperature() / OPTIM_TEMPERATURE;
 	index++;
-	inputs[index] = organism.getEnergy() / organism.getMaxEnergy();
+	_inputs[index] = organism.getEnergy() / organism.getMaxEnergy();
 	index++;
-	inputs[index] = organism.getSize() / SIZE_ORGANISM;
+	_inputs[index] = organism.getSize() / SIZE_ORGANISM;
 	index++;
-	inputs[index] = organism.getAlpha() / 255.0;
+	_inputs[index] = organism.getAlpha() / 255.0;
 	index++;
-	inputs[index] = organism.getRed() / 255.0;
+	_inputs[index] = organism.getRed() / 255.0;
 	index++;
-	inputs[index] = organism.getBlue() / 255.0;
+	_inputs[index] = organism.getBlue() / 255.0;
 	index++;
-	inputs[index] = organism.getRed() / 255.0;
+	_inputs[index] = organism.getRed() / 255.0;
 
-	return inputs;
+	return _inputs;
 }
 
 //----------------------------------------------------------------------
@@ -256,21 +268,24 @@ void Simulation::updateMovement(Organism* organism)
 		movementFactorIfinWater = MOVEMENT_REDUCTION_IN_WATER;
 	}
 
-	//Change x-coordinate
-	organism->setdeltaX(getTempBasedFunction(*organism) / organism->getSize() * MOVEMENT_SPEED * organism->getNeuralNetwork().getOutputs()[0]);
-	organism->addPositionX(organism->getDeltaX() * movementFactorIfinWater);
+	//Change rotation-coordinate
+	organism->setDeltaRotation(getTempBasedFunction(*organism) / organism->getSize() * MOVEMENT_SPEED * organism->getNeuralNetwork().getOutputs()[1]);
+	organism->addRotation(organism->getDeltaRotation() * MOVEMENT_REDUCTION_IN_WATER);
+	
+
+	//Change x- and y-coordinate
+	organism->setDeltaDistanceForward(getTempBasedFunction(*organism) / organism->getSize() * MOVEMENT_SPEED * organism->getNeuralNetwork().getOutputs()[0]);
+	organism->addPositionX(organism->getDeltaDistanceForward()*cos(organism->getRotation()) * movementFactorIfinWater);
+	organism->addPositionY(organism->getDeltaDistanceForward()*sin(organism->getRotation()) * movementFactorIfinWater);
 	if (organism->getPositionX() < 0.0)
 		organism->setPositionX(0.0);
 	if (organism->getPositionX() > SIMULATION_X - 1)
 		organism->setPositionX(SIMULATION_X - 1);
-
-	//Change y-coordinate
-	organism->setdeltaY(getTempBasedFunction(*organism) / organism->getSize() * MOVEMENT_SPEED * organism->getNeuralNetwork().getOutputs()[1]);
-	organism->addPositionY((organism->getDeltaY() * MOVEMENT_REDUCTION_IN_WATER));
 	if (organism->getPositionY() < 0.0)
 		organism->setPositionY(0.0);
 	if (organism->getPositionY() > SIMULATION_Y - 1)
 		organism->setPositionY(SIMULATION_Y - 1);
+
 }
 
 
@@ -534,6 +549,23 @@ void Simulation::getTileXYViaOrganism(int &x, int &y, const Organism *organism)
 	if (y > SIMULATION_Y - 1)
 		y = SIMULATION_Y - 1;
 }
+
+//----------------------------------------------------------------------
+
+void Simulation::saveData()
+{
+	cout << "Saving World" << endl;
+	_fileOrganism.open(to_string(SEED) + "_Organisms.txt");
+
+	for (int i = 0; i < _organisms.size(); i++) {
+		for (int j = 0; j < _organisms[i].getNeuralNetwork().getWeights().size(); j++) {
+			_fileOrganism << _organisms[i].getNeuralNetwork().getWeights()[j] << " ";
+		}
+		_fileOrganism << endl;
+	}
+}
+
+//----------------------------------------------------------------------
 
 //Random engine call
 double Simulation::randomReal(const double lowerBoundary, const double upperBoundary)

@@ -46,10 +46,10 @@ public:
 	void getEvents();
 	//----------------------------------------------------------------------
 	//Returns the x position of the mouse
-	int GraphicHandler::getMousePositionX();
+	int getMousePositionX();
 	//----------------------------------------------------------------------
 	//Returns the y position of the mouse
-	int GraphicHandler::getMousePositionY();
+	int getMousePositionY();
 private:
 	//Columns and rows for graphics
 	int _Simulationx = SIMULATION_X;

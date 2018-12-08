@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <SFML/Graphics.hpp>
+#include <fstream>
 #include "Landscape.h"
 #include "Organism.h"
 
@@ -95,6 +96,8 @@ public:
 	//Gets the efficiency of the body functions based on the optimum temperature
 	double getTempBasedFunction(Organism &organism);
 	//----------------------------------------------------------------------
+	void saveData();
+	//----------------------------------------------------------------------
 	//Gets the position of the tile with the position of the organism
 	void getTileXYViaOrganism(int &x, int &y, const Organism *organism);
 	//Random generator 
@@ -105,6 +108,7 @@ public:
 	static mt19937 mersenne_generator;
 
 private:
+	vector<double> _inputs;
 	Landscape _landscape;
 	vector<Organism> _organisms;
 	Organism* _informationOrganism = NULL;
@@ -113,5 +117,7 @@ private:
 	double _accDeltaFrame;
 	double _accDeltaTime;
 	double _highestFitness = 0.0;
+	fstream _fileOrganism;
+	fstream _fileSimulationData;
 };
 

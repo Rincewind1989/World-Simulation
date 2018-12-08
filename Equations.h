@@ -8,9 +8,9 @@
 void Simulation::updateFoodAsODE()
 {
 	double foodAdd;
-	for (vector<vector<Tile>>::iterator it = _landscape.getTiles().begin(); it != _landscape.getTiles().end(); ++it)
+	for (vector<vector<Tile>>::iterator it = _landscape.getTiles().begin() + 1; it != _landscape.getTiles().end() - 1; ++it)
 	{
-		for (vector<Tile>::iterator it2 = it->begin(); it2 != it->end(); ++it2)
+		for (vector<Tile>::iterator it2 = it->begin() + 1; it2 != it->end() - 1; ++it2)
 		{
 
 			if (CHANCE_FOOD_GROWTH >= 1.0 || randomReal(0.0, 1.0) < CHANCE_FOOD_GROWTH)
@@ -51,10 +51,10 @@ void Simulation::updateHeatEnergy(Organism* organism)
 	getTileXYViaOrganism(x, y, &(*organism));
 
 	//Get lost temperature
-	double lostTemperature = organism->getHeatLossFactor() * (organism->getTemperature() - _landscape.getTiles()[y][x].getTemperature());
+	double lostTemperature = HEAT_TIME_FACTOR * organism->getHeatLossFactor() * (organism->getTemperature() - _landscape.getTiles()[y][x].getTemperature());
 
 	//Get added temperature
-	double addTemperature = organism->getHeatEnergyProduction();
+	double addTemperature = HEAT_TIME_FACTOR * organism->getHeatEnergyProduction();
 
 	//Add/subtract temperature from environment and organism
 	deltaTemperature = addTemperature - lostTemperature;
@@ -88,7 +88,7 @@ void Simulation::updateEnergy(Organism* organism)
 	getTileXYViaOrganism(x, y, &(*organism));
 	if (_landscape.getTiles()[y][x].getHeight() < WATER_LEVEL)
 		movementFactorIfinWater = MOVEMENT_ENERGY_FACTOR_IN_WATER;
-	addEnergy += -1 * MOVEMENT_ENERGY_LOST * movementFactorIfinWater * (organism->getDeltaX() * organism->getDeltaX()) + organism->getDeltaY() * organism->getDeltaY();
+	addEnergy += -1 * MOVEMENT_ENERGY_LOST * movementFactorIfinWater * (organism->getDeltaDistanceForward() * organism->getDeltaDistanceForward());
 
 
 	organism->addEnergy(addEnergy);
@@ -177,7 +177,7 @@ void Simulation::updateEating(Organism* organism)
 		movementFactorIfinWater = MOVEMENT_ENERGY_FACTOR_IN_WATER;
 	}
 
-	food = getTempBasedFunction(*organism) * CONSUMPTION_FACTOR * (1.0 - sqrt((organism->getDeltaX() * organism->getDeltaX()) + organism->getDeltaY() * organism->getDeltaY())/(getTempBasedFunction(*organism) / organism->getSize() * MOVEMENT_SPEED));
+	food = getTempBasedFunction(*organism) * CONSUMPTION_FACTOR * (1.0 - sqrt((organism->getDeltaDistanceForward() * organism->getDeltaDistanceForward()))/(getTempBasedFunction(*organism) / organism->getSize() * MOVEMENT_SPEED));
 	if ((organism->getEnergyViaFoodValue(food) + organism->getEnergy()) > organism->getMaxEnergy())
 		return;
 

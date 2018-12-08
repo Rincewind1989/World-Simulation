@@ -24,17 +24,17 @@ int main()
 	GraphicHandler graphicHandler(simulation);
 
 	//Open file to save values
-	ofstream saveFile;
-	if (SAVE_FITNESS || SAVE_POPULATION || SAVE_SIZE)
-	{
-		time_t t = time(0);   // get time now
-		struct tm * now = localtime(&t);
-		saveFile.open("Saves/" + to_string(SEED) + "_" + to_string(now->tm_mday) + "/" + to_string(now->tm_mon + 1) + "/" + to_string(now->tm_year + 1900) + ".txt");
-		saveFile << "Avg. Fitness" << "\t" << "Avg. Size" << "\t" << "Biggest Size" << "\t" << "Smallest Size" << "\t" << "Frame" << endl;
-	}
+	//ofstream saveFile;
+	//if (SAVE_FITNESS || SAVE_POPULATION || SAVE_SIZE)
+	//{
+	//	time_t t = time(0);   // get time now
+	//	struct tm * now = localtime(&t);
+	//	saveFile.open("Saves/" + to_string(SEED) + "_" + to_string(now->tm_mday) + "/" + to_string(now->tm_mon + 1) + "/" + to_string(now->tm_year + 1900) + ".txt");
+	//	saveFile << "Avg. Fitness" << "\t" << "Avg. Size" << "\t" << "Biggest Size" << "\t" << "Smallest Size" << "\t" << "Frame" << endl;
+	//}
 		
 	cout << "\nRunning simulation...\n";
-	int frames = 0;
+	//int frames = 0;
 	while (true)
 	{
 		//Update Graphics
@@ -61,20 +61,20 @@ int main()
 		simulation.updateSimulation();
 
 		//Save the information
-		if (SAVE_FITNESS && frames >= NUMBER_FRAMES_TO_SAVE)
-			saveFile << simulation.getAvgFitness();
+		//if (SAVE_FITNESS && frames >= NUMBER_FRAMES_TO_SAVE)
+		//	saveFile << simulation.getAvgFitness();
 
-		if (SAVE_SIZE && frames >= NUMBER_FRAMES_TO_SAVE)
-			saveFile << "\t" << simulation.getAvgSize() << "\t" << simulation.getBiggestSize() << "\t" << simulation.getSmallSize();
+		//if (SAVE_SIZE && frames >= NUMBER_FRAMES_TO_SAVE)
+		//	saveFile << "\t" << simulation.getAvgSize() << "\t" << simulation.getBiggestSize() << "\t" << simulation.getSmallSize();
 
-		if (SAVE_POPULATION && frames >= NUMBER_FRAMES_TO_SAVE)
-			saveFile << simulation.getOrganisms().size();
+		//if (SAVE_POPULATION && frames >= NUMBER_FRAMES_TO_SAVE)
+			//saveFile << simulation.getOrganisms().size();
 		
-		if ((SAVE_FITNESS || SAVE_SIZE || SAVE_POPULATION) && frames >= NUMBER_FRAMES_TO_SAVE)
-			saveFile << "\t" << frames << endl;
+		//if ((SAVE_FITNESS || SAVE_SIZE || SAVE_POPULATION) && frames >= NUMBER_FRAMES_TO_SAVE)
+			//saveFile << "\t" << frames << endl;
 
-		if (frames >= NUMBER_FRAMES_TO_SAVE) { frames = 0; }			
-		else { frames++; }
+		//if (frames >= NUMBER_FRAMES_TO_SAVE) { frames = 0; }			
+		//else { frames++; }
 		
 	}
 }
@@ -89,18 +89,18 @@ void readIniConstant()
 	}
 	cout << "Config loaded from 'Constants.ini'\n";
 
-	cout << "\nLoading Save Properties.\n\n";
-	cout << "Number_Frames_to_save=" << reader.GetInteger("Analytics", "Number_Frames_to_save", -1) << "\n";
-	NUMBER_FRAMES_TO_SAVE = reader.GetInteger("Analytics", "Number_Frames_to_save", -1);
+	//cout << "\nLoading Save Properties.\n\n";
+	//cout << "Number_Frames_to_save=" << reader.GetInteger("Analytics", "Number_Frames_to_save", -1) << "\n";
+	//NUMBER_FRAMES_TO_SAVE = reader.GetInteger("Analytics", "Number_Frames_to_save", -1);
 
-	cout << "saveFitness=" << reader.GetBoolean("Analytics", "saveFitness", -1) << "\n";
-	SAVE_FITNESS = reader.GetInteger("Analytics", "saveFitness", -1);
+	//cout << "saveFitness=" << reader.GetBoolean("Analytics", "saveFitness", -1) << "\n";
+	//SAVE_FITNESS = reader.GetInteger("Analytics", "saveFitness", -1);
 
-	cout << "saveSize=" << reader.GetBoolean("Analytics", "saveSize", -1) << "\n";
-	SAVE_SIZE = reader.GetInteger("Analytics", "saveSize", -1);
+	//cout << "saveSize=" << reader.GetBoolean("Analytics", "saveSize", -1) << "\n";
+	//SAVE_SIZE = reader.GetInteger("Analytics", "saveSize", -1);
 
-	cout << "savePopulation=" << reader.GetBoolean("Analytics", "savePopulation", -1) << "\n";
-	SAVE_POPULATION = reader.GetInteger("Analytics", "savePopulation", -1);
+	//cout << "savePopulation=" << reader.GetBoolean("Analytics", "savePopulation", -1) << "\n";
+	//SAVE_POPULATION = reader.GetInteger("Analytics", "savePopulation", -1);
 
 	cout << "\nLoading World Properties.\n\n";
 	cout << "random seed=" << reader.GetInteger("World properties", "random seed", -1) << "\n";
@@ -180,6 +180,9 @@ void readIniConstant()
 	cout << "Starting_temperature=" << reader.GetReal("Life properties", "Starting_temperature", -1) << "\n";
 	STARTING_TEMPERATURE = reader.GetReal("Life properties", "Starting_temperature", -1);
 
+	cout << "Heat_time_factor=" << reader.GetReal("Life properties", "Heat_time_factor", -1) << "\n";
+	HEAT_TIME_FACTOR = reader.GetReal("Life properties", "Energy_heat_production", -1);
+
 	cout << "Energy_heat_production=" << reader.GetReal("Life properties", "Energy_heat_production", -1) << "\n";
 	ENERGY_HEAT_PRODUCTION = reader.GetReal("Life properties", "Energy_heat_production", -1);
 
@@ -254,7 +257,7 @@ void readIniConstant()
 	cout << "Num_layers=" << reader.GetInteger("Network properties", "Num_layers", -1) << "\n";
 	NUM_LAYERS = reader.GetInteger("Network properties", "Num_layers", -1);
 
-	INPUT_NEURONS = 3 * (2 * ADJACENT_TILES_RADIUS + 1) * (2 * ADJACENT_TILES_RADIUS + 1)				//Adjecent tile properties (Like Temperature,Food,Number of entites on tile...)
+	INPUT_NEURONS = 3 * ADJACENT_TILES_RADIUS * ADJACENT_TILES_RADIUS				//Adjecent tile properties (Like Temperature,Food,Number of entites on tile...)
 		+ INPUTS_FOR_BODY_PROPERTIES + NUMBER_NEXT_ENTITES * 7											//Number of input properties and properties of N-next entites (Like, size, relative position, color, etc...)
 		+ 1;
 	HIDDEN_NEURONS = INPUT_NEURONS / 2;

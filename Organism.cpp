@@ -5,6 +5,7 @@ Organism::Organism()
 {
 	_positionX = randomReal(0, (double)SIMULATION_X);
 	_positionY = randomReal(0, (double)SIMULATION_Y);
+	_rotation = randomReal(0, 2*3.14159);
 
 	//Colors
 	_red = randomInt(0, 255);
@@ -46,6 +47,7 @@ Organism Organism::asexualBreeding()
 	child.getNeuralNetwork().processMutations();
 	child._positionX = _positionX;
 	child._positionY = _positionY;
+	child._generation = _generation + 1;
 	if (child._positionX > SIMULATION_X)
 	{
 		child._positionX = SIMULATION_X;
@@ -101,7 +103,7 @@ Organism Organism::asexualBreeding()
 
 	double newEHP = _energyHeatProduction + mutateStat(_energyHeatProduction);
 	if (newEHP < LOWEST_ENERGY_HEAT_PRODUCTION) { newEHP = LOWEST_ENERGY_HEAT_PRODUCTION; }
-	if (newEHP < HIGHEST_ENERGY_HEAT_PRODUCTION) { newEHP = HIGHEST_ENERGY_HEAT_PRODUCTION; }
+	if (newEHP > HIGHEST_ENERGY_HEAT_PRODUCTION) { newEHP = HIGHEST_ENERGY_HEAT_PRODUCTION; }
 	_energyHeatProduction = newEHP;
 	child.setHeatEnergyProduction(newEHP);
 
@@ -353,8 +355,54 @@ const double &Organism::getDeltaY() const
 	return _deltaY;
 }
 
-//----------------------------------------------------------------------
 
+//----------------------------------------------------------------------
+void Organism::setRotation(const double &rotation)
+{
+	_rotation = rotation;
+}
+
+void Organism::addRotation(const double &rotation)
+{
+	_rotation += rotation;
+	if (rotation > 6.28318)
+		_rotation -= 6.28318;
+}
+
+const double &Organism::getRotation() const
+{
+	return _rotation;
+}
+
+void Organism::setDeltaRotation(const double &rotation)
+{
+	_deltaRotation = rotation;
+}
+
+const double &Organism::getDeltaRotation() const
+{
+	return _deltaRotation;
+}
+
+
+//----------------------------------------------------------------------
+void Organism::setDeltaDistanceForward(const double &delta)
+{
+	_deltaDistanceForward = delta;
+}
+
+void Organism::addDeltaDistanceForward(const double &delta)
+{
+	_deltaDistanceForward += delta;
+}
+
+const double &Organism::getDeltaDistanceForward() const
+{
+	return _deltaDistanceForward;
+}
+
+
+//----------------------------------------------------------------------
 void Organism::setEnergy(const double &energy)
 {
 	_energy = energy;
@@ -404,6 +452,21 @@ void Organism::addAge(const double &age)
 const double &Organism::getAge() const
 {
 	return _age;
+}
+
+//----------------------------------------------------------------------
+void Organism::setGeneration(const double &generation)
+{
+	_generation = generation;
+}
+
+void Organism::addGeneration(const double &generation)
+{
+	_generation += generation;
+}
+const int &Organism::getGeneration() const
+{
+	return _generation;
 }
 
 //----------------------------------------------------------------------

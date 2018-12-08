@@ -1,5 +1,6 @@
 #include "Landscape.h"
 #include "PerlinNoise.h"
+#include <iostream>
 
 
 
@@ -26,14 +27,47 @@ Landscape::Landscape()
 	float max = 0, min = 0;
 
 	//Using the Perlin Noise to get a height map
-	for (int y = 0; y < SIMULATION_Y; y++)
+	if (ISLAND_MODE)
 	{
-		for (int x = 0; x < SIMULATION_X; x++)
+
+		for (int y = 0; y < SIMULATION_Y; y++)
 		{
-			double height = (perlin.octaveNoise0_1(x / fx, y / fy, OCTAVES) - 0.5) * HEIGHT_MULITPLICATOR;
-			_tiles[y][x].setHeight(height);
-			if (height > max) { max = height; }
-			if (height < min) { min = height; }
+			for (int x = 0; x < SIMULATION_X; x++)
+			{
+				double height = (perlin.octaveNoise0_1(x / fx, y / fy, OCTAVES) - 0.5);
+				_tiles[y][x].setHeight(height);
+				if (height > max) { max = height; }
+				if (height < min) { min = height; }
+			}
+		}
+
+		//If island mode is activated a gaussian 2-d distribution (gradient map) is subtracted from the noise.
+		int powerOfGaussian = 6;
+		double multiplyer = 1.0 / (pow((SIMULATION_X / 2.0), powerOfGaussian)) * log(0.4);
+		for (int y = 0; y < SIMULATION_Y; y++)
+		{
+			for (int x = 0; x < SIMULATION_X; x++)
+			{
+					double height = (1 - exp(multiplyer*(pow((x - SIMULATION_X / 2.0), powerOfGaussian) + pow((y - SIMULATION_Y / 2.0), powerOfGaussian))));
+					_tiles[y][x].setHeight(_tiles[y][x].getHeight() - height);
+					if (_tiles[y][x].getHeight() - height > max) { max = _tiles[y][x].getHeight() - height; }
+					if (_tiles[y][x].getHeight() - height < min) { min = _tiles[y][x].getHeight() - height; }
+			}
+		}
+
+
+	}
+	else
+	{
+		for (int y = 0; y < SIMULATION_Y; y++)
+		{
+			for (int x = 0; x < SIMULATION_X; x++)
+			{
+				double height = (perlin.octaveNoise0_1(x / fx, y / fy, OCTAVES) - 0.5);
+				_tiles[y][x].setHeight(height);
+				if (height > max) { max = height; }
+				if (height < min) { min = height; }
+			}
 		}
 	}
 
@@ -47,9 +81,9 @@ Landscape::Landscape()
 	//Getting the temperature based on the height map
 	double optimumHeight = fabs(_heightMax * WATER_LEVEL + _heightMax * GRASS_LEVEL) / 2.0;
 	double slope = (LOW_TEMPERATURE - OPT_TEMPERATURE) / (_heightMax - optimumHeight);
-	for (int y = 0; y < SIMULATION_Y; y++)
+	for (int y = 0; y < SIMULATION_Y ; y++)
 	{
-		for (int x = 0; x < SIMULATION_X; x++)
+		for (int x = 0; x < SIMULATION_X ; x++)
 		{
 			//Using the Perlin Noise to get a temperature map that is added on the height map temperature
 			double noise = perlin.octaveNoise0_1(x / fx, y / fy, OCTAVES) - 0.5;
@@ -76,9 +110,9 @@ Landscape::Landscape()
 
 	//Depending on the height and the temperature food is generated on every tile
 	double food;
-	for (int y = 0; y < SIMULATION_Y; y++)
+	for (int y = 1; y < SIMULATION_Y - 1; y++)
 	{
-		for (int x = 0; x < SIMULATION_X; x++)
+		for (int x = 1; x < SIMULATION_X - 1; x++)
 		{
 			if (randomReal(0.0, 1.0) < CHANCE_FOOD_GROWTH)
 			{

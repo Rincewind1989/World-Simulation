@@ -264,7 +264,18 @@ void GraphicHandler::printEntities()
 			yPosition = (int)((_yPosition / (float)WINDOW_HEIGHT) * (float)SIMULATION_Y - _zPosition / (2.0 * 100) * (float)SIMULATION_Y);
 			tmpShape.setPosition((it->getPositionX() - xPosition) * _WidnowWidth / _Simulationx * 100 / _zPosition, (it->getPositionY() - yPosition) * _WindowHeight / _Simulationy * 100 / _zPosition);
 
+			//Draw line for the rotation of the organism
+			sf::RectangleShape line(sf::Vector2f(5, 100.0 / _zPosition * WINDOW_WIDTH / SIMULATION_X / 2.0 * it->getSize()));
+			line.setPosition((it->getPositionX() - xPosition) * _WidnowWidth / _Simulationx * 100 / _zPosition + tmpShape.getRadius() - 2.5, (it->getPositionY() - yPosition) * _WindowHeight / _Simulationy * 100 / _zPosition + tmpShape.getRadius() - 2.5);
+			color.r = 0;
+			color.g = 0;
+			color.b = 0;
+			color.a = 255;
+			line.setFillColor(color);
+			line.setRotation(it->getRotation() * 180.0/3.14159 - 90.0);
+
 			_gameWindow.draw(tmpShape);
+			_gameWindow.draw(line);
 		}
 	}
 }
@@ -348,6 +359,7 @@ void GraphicHandler::printInformation()
 		"Height: " + _informationString[0],
 		"Temperature: " + _informationString[1],
 		"Food: " + _informationString[2],
+		"\n",
 		"Number organisms: " + _informationString[3],
 		"Highest Fitness so far: " + _informationString[4],
 		"Avg. Fitness: " + _informationString[5],
@@ -424,8 +436,14 @@ void GraphicHandler::printInformation()
 		str << setprecision(3) << _simulation->getInformationOrganism()->getSize();
 		_informationString[21] = str.str();
 
+		str.str("");
+		str.clear();
+		str << setprecision(3) << _simulation->getInformationOrganism()->getGeneration();
+		_informationString[22] = str.str();
+
 		//Textarray to be printed
-		string informationText2[] = { "Organism on PositionX: " + _informationString[12] + "\tY: " + _informationString[13],
+		string informationText2[] = { "\n", 
+			"Organism on PositionX: " + _informationString[12] + "\tY: " + _informationString[13],
 			"Age: " + _informationString[14],
 			"Energy: " + _informationString[15],
 			"Energy/Max Energy in %: " + _informationString[16],
@@ -433,12 +451,13 @@ void GraphicHandler::printInformation()
 			"HeatLoss: " + _informationString[18],
 			"Energy-Heat-Production: " + _informationString[19],
 			"Fitness: " + _informationString[20],
-			"Size: " + _informationString[21]
+			"Size: " + _informationString[21],
+			"Generation: " + _informationString[22]
 		};
 
 		//resizes proportional to the size of the organism
 		tmpShape.setRadius(10.0 * _simulation->getInformationOrganism()->getSize());
-		tmpShape.setPosition(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 1.65);
+		tmpShape.setPosition(WINDOW_WIDTH, WINDOW_INFORMATION_HEIGHT / 1.55);
 		sf::Color color(_simulation->getInformationOrganism()->getRed(), _simulation->getInformationOrganism()->getGreen(), _simulation->getInformationOrganism()->getBlue(), _simulation->getInformationOrganism()->getAlpha());
 		tmpShape.setFillColor(color);
 		_gameWindow.draw(tmpShape);
@@ -456,6 +475,7 @@ void GraphicHandler::printInformation()
 	//Print Frame- and Time mode
 	printText("(Push G)Time Mode: " + to_string(TIME_LAPSE), WINDOW_WIDTH + WINDOW_INFORMATION_WIDTH - 161.0, 0.0);
 	printText("(Push H)Graphic Mode: " + to_string(GRAPHICS_ON), WINDOW_WIDTH + WINDOW_INFORMATION_WIDTH - 180.0, 15.0);
+	printText("(Push S)Save World", WINDOW_WIDTH + WINDOW_INFORMATION_WIDTH - 180.0, 30.0);
 
 }
 
@@ -731,6 +751,14 @@ void GraphicHandler::getEvents()
 			if (event.key.code == sf::Keyboard::H)
 			{
 				GRAPHICS_ON = !GRAPHICS_ON;
+			}
+		}
+
+		if (event.type == sf::Event::KeyPressed)
+		{
+			if (event.key.code == sf::Keyboard::S)
+			{
+				_simulation->saveData();
 			}
 		}
 	}

@@ -23,6 +23,7 @@ bool EXIT = false;
 int RANDOM_SEED = 0;		//The random seed for the world generation. (0 means a random seed)
 double FREQUENCY = 2.0;	//Frequency in which the perlin noise works, highest frequency results in more bumpy terrain
 int OCTAVES = 7;			//Octaves are the number of reshaping, highest octaves result in a more natural terrain
+bool ISLAND_MODE = true;	//Determines if the map type is type "island"
 //----------------------------------------------------------------------								
 //World size
 int SIMULATION_X = 256;
@@ -64,7 +65,7 @@ double ALPHA_MIN = 200.0;
 //----------------------------------------------------------------------
 //Information window properties
 int WINDOW_INFORMATION_WIDTH = 500;
-int WINDOW_INFORMATION_HEIGHT = 475;
+int WINDOW_INFORMATION_HEIGHT = 550;
 double INFORMATION_WINDOW_SPRITE_SIZE = .1;
 int INFORMATION_TEXT_SIZE = 16;
 double RADIUS_NEURON = 3.25;	//Radius of a drawn neuron on the information window
@@ -85,6 +86,7 @@ double ENERGY_HEAT_PRODUCTION = 1.5;						//Factor in which energy is changed in
 double LOWEST_ENERGY_HEAT_PRODUCTION = 0.5;
 double HIGHEST_ENERGY_HEAT_PRODUCTION = 2.5;
 double HEAT_LOSS_FACTOR = 0.65;								//Loss of the body temperature towards the environment
+double HEAT_TIME_FACTOR = 0.07;			//Should be set close to 0.1. This impacts the rate of change of the both heat loss and heat production. High values result in very fast temperature change of the organisms
 double LOWEST_HEAT_LOSS_VALUE = 0.75;
 double HIGHEST_HEAT_LOSS_VALUE = 1.5;
 double MOVEMENT_SPEED = 2.0;								//Movementspeed of the organisms
@@ -106,18 +108,18 @@ double TIME_FOR_FITNESS_REPRODUCTION = 25.0;
 //Network properties
 double MIN_RANDOM_WEIGHT = -5.0;
 double MAX_RANDOM_WEIGHT = 5.0;
-int ADJACENT_TILES_RADIUS = 1;			//Radius of the organism's sight
+int ADJACENT_TILES_RADIUS = 3;			//Radius of the organism's sight
 int INPUTS_FOR_BODY_PROPERTIES = 7;	//Inputs of the body properties for the neural network(Like bodytemperature, bodyenergy,size, colors ,etc...)
 int NUMBER_NEXT_ENTITES = 4;			//Number of next entities that can be identified
 int NUM_LAYERS = 3;	//Number of layers (This includes input and output layer) MUST ALWAYS BE >= 2
 //----------------------------------------------------------------------
 //Number of need inputneurons to cover all inputs
-int INPUT_NEURONS = 3 * (2 * ADJACENT_TILES_RADIUS + 1) * (2 * ADJACENT_TILES_RADIUS + 1) //Adjecent tile properties (Like Temperature,Food,Number of entites on tile...)
+int INPUT_NEURONS = 3 * ADJACENT_TILES_RADIUS * ADJACENT_TILES_RADIUS //Adjecent tile properties (Like Temperature,Food,Number of entites on tile...)
 + INPUTS_FOR_BODY_PROPERTIES + NUMBER_NEXT_ENTITES * 7											//Number of input properties and properties of N-next entites (Like, size, relative position, color, etc...)
 + 1;																							//Bias
-int OUTPUT_NEURONS = 5;	//Number of output Neurons to cover all outputs needed
+int OUTPUT_NEURONS = 5;	//Number of output Neurons to cover all outputs needed (DO NOT CHANGE!)
 int HIDDEN_NEURONS = INPUT_NEURONS / 2; //Hidden neurons
-double CHANCE_MUTATE = 1;	//Chance that a mutation of a weight occurs
+double CHANCE_MUTATE = 0.07;	//Chance that a mutation of a weight occurs
 double MUTATION_PERTUBATE_PROCENT = 0.15;	//Max and min pertubation in procent. A real number between this value is taken and added on the weight
 double SIGMOID_STRETCHX_FACTOR = 0.5;	//Stretch factor for the sigmoid func on the x-axes
 double SIGMOID_STRETCHY_FACTOR = 1;	//Stretch factor for the sigmoid func on the y-axes

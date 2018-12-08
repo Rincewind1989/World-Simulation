@@ -21,7 +21,7 @@ public:
 	//Feeds the momentarily saved input forward through the network
 	void feedForward(const vector<double> &inputs);
 	//----------------------------------------------------------------------
-	//Sigmoid functionas the activation function
+	//Sigmoid function as the activation function
 	const double sigmoid(const double &sum);
 	//----------------------------------------------------------------------
 	//Adds random mutations to the weights

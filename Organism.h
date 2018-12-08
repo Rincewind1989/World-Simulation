@@ -19,7 +19,7 @@ public:
 	Organism(const Organism &father, const Organism &mother);
 	~Organism();
 
-	//Mutates the color of the organism by chance
+	//Mutates a stat of the organism by chance
 	double mutateStat(double colorValue);
 
 	//Getters/Setters
@@ -35,6 +35,16 @@ public:
 	void setdeltaY(const double &deltay);
 	const double &getDeltaY() const;
 	//----------------------------------------------------------------------
+	void setRotation(const double &rotation);
+	void addRotation(const double &rotation);
+	const double &getRotation() const;
+	void setDeltaRotation(const double &rotation);
+	const double &getDeltaRotation() const;
+	//----------------------------------------------------------------------
+	void setDeltaDistanceForward(const double &delta);
+	void addDeltaDistanceForward(const double &rotation);
+	const double &getDeltaDistanceForward() const;
+	//----------------------------------------------------------------------
 	void setEnergy(const double &energy);
 	void addEnergy(const double &energy);
 	void addEnergyViaFood(const double &food);
@@ -45,6 +55,10 @@ public:
 	void setAge(const double &age);
 	void addAge(const double &age);
 	const double &getAge() const;
+	//----------------------------------------------------------------------
+	void setGeneration(const double &generation);
+	void addGeneration(const double &generation);
+	const int &getGeneration() const;
 	//----------------------------------------------------------------------
 	void setTemperature(const double &temperature);
 	void addTemperature(const double &temperature);
@@ -101,11 +115,14 @@ private:
 	//Brain...kind of
 	NeuralNetwork _neuralNetwork;
 	//Organism Properties
-	//X-Y Position
+	//X-Y Position and rotation
 	double _positionX;
 	double _positionY;
+	double _deltaDistanceForward = 0.0;
 	double _deltaX;
 	double _deltaY;
+	double _rotation = 0.0;
+	double _deltaRotation = 0.0;
 	//----------------------------------------------------------------------
 	int _red;
 	int _green;
@@ -128,5 +145,6 @@ private:
 	double _temperature = STARTING_TEMPERATURE;
 	bool _dead = false;
 	bool _washit = false;
+	int _generation = 0;
 };
 
